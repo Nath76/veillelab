@@ -2,8 +2,10 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 const CLOUD_TREATMENT_URL = 'https://veillelab-cloud-backend2-633342872265.europe-west9.run.app'
 
 function getTreatmentUrl() {
-  const configured = import.meta.env.VITE_TREATMENT_API_URL?.trim()
-  return (configured || CLOUD_TREATMENT_URL).replace(/\/+$/, '')
+  // T01 et T03 utilisent désormais explicitement Cloud Run.
+  // On n'autorise plus une ancienne variable VITE_TREATMENT_API_URL
+  // à rediriger silencieusement les traitements vers Apps Script.
+  return CLOUD_TREATMENT_URL
 }
 
 function buildCorpus(publications, contents) {
