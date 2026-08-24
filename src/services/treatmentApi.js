@@ -1,60 +1,16 @@
-function makeRequestId() {
-  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID()
-  return `t01-${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
-
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-async function postJson(url, body) {
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(body),
-  })
+// T01 Cloud Run — première intégration réelle.
+// Le chatbot et les autres fonctions de l'application ne sont pas modifiés.
+const CLOUD_T01_URL = 'https://veillelab-cloud-backend2-633342872265.europe-west9.run.app'
 
-  if (!response.ok) {
-    throw new Error(`Le service IA a répondu ${response.status}.`)
-  }
-
-  const payload = await response.json()
-  if (!payload?.ok) {
-    throw new Error(payload?.error || 'Le service IA a retourné une erreur.')
-  }
-  return payload.data
+function getTreatmentUrl() {
+  const configured = import.meta.env.VITE_TREATMENT_API_URL?.trim()
+  return (configured || CLOUD_T01_URL).replace(/\/+$/, '')
 }
 
-function isNetworkError(error) {
-  const message = String(error?.message || error || '')
-  return error instanceof TypeError || /NetworkError|Failed to fetch|fetch resource/i.test(message)
-}
-
-async function recoverGeneratedResult(url, requestId) {
-  // Si la réponse HTTP a été perdue après la fin du calcul, Apps Script conserve
-  // temporairement le résultat. On le récupère sans relancer Claude.
-  for (let attempt = 0; attempt < 30; attempt += 1) {
-    await wait(attempt === 0 ? 1200 : 3000)
-    try {
-      const state = await postJson(url, {
-        action: 'getTreatmentResult',
-        request_id: requestId,
-      })
-      if (state?.status === 'done' && state.result) return state.result
-      if (state?.status === 'error') {
-        throw new Error(state.error || 'La génération a échoué côté service IA.')
-      }
-    } catch (error) {
-      if (!isNetworkError(error)) throw error
-      // Une coupure réseau peut aussi toucher l'appel de récupération : on poursuit brièvement.
-    }
-  }
-  return null
-}
-
-export async function generateTreatment({ treatment, need, publications, contents }) {
-  const url = import.meta.env.VITE_GRAPH_CHAT_URL?.trim()
-  if (!url) throw new Error("L'URL du service IA n'est pas configurée.")
-
-  const corpus = publications.map(pub => ({
+function buildCorpus(publications, contents) {
+  return publications.map(pub => ({
     publication_id: pub.publication_id,
     titre: pub.titre,
     organisme_producteur: pub.organisme_producteur,
@@ -64,11 +20,61 @@ export async function generateTreatment({ treatment, need, publications, content
     url_source: pub.url_source,
     chunks: contents.filter(c => c.publication_id === pub.publication_id),
   }))
+}
 
-  const requestId = makeRequestId()
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options)
+
+  if (!response.ok) {
+    let detail = ''
+    try {
+      const payload = await response.json()
+      detail = payload?.error ? ` ${payload.error}` : ''
+    } catch {}
+    throw new Error(`Le service IA a répondu ${response.status}.${detail}`)
+  }
+
+  return response.json()
+}
+
+async function pollCloudJob(baseUrl, jobId) {
+  // Le traitement vit côté serveur : une interruption du navigateur
+  // ne détruit plus le job. Le front ne fait que relire son état.
+  const maxAttempts = 400
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    await wait(attempt === 0 ? 1200 : 3000)
+
+    try {
+      const payload = await fetchJson(`${baseUrl}/jobs/${jobId}`)
+      const job = payload?.job
+
+      if (job?.status === 'completed' && job.result) {
+        sessionStorage.removeItem('quirites:t01:activeJob')
+        return job.result
+      }
+
+      if (job?.status === 'error') {
+        sessionStorage.removeItem('quirites:t01:activeJob')
+        throw new Error(job.error_message || 'La génération T01 a échoué.')
+      }
+    } catch (error) {
+      const message = String(error?.message || '')
+      // Les erreurs métier sont remontées immédiatement.
+      // Une simple coupure réseau pendant le polling est tolérée.
+      if (/a échoué|Anthropic|chunk|corpus|provenance|secret|invalide|inaccessible/i.test(message)) {
+        throw error
+      }
+    }
+  }
+
+  throw new Error(
+    "Le traitement est toujours en cours côté serveur. Son résultat n'est pas perdu ; rechargez la page puis relancez la même demande pour reprendre le suivi."
+  )
+}
+
+async function generateViaCloud({ url, treatment, need, corpus }) {
   const body = {
-    action: 'generateTreatment',
-    request_id: requestId,
     treatment_id: treatment.traitement_id,
     need,
     treatment: {
@@ -83,17 +89,48 @@ export async function generateTreatment({ treatment, need, publications, content
     corpus,
   }
 
+  const signature = JSON.stringify({
+    treatment_id: treatment.traitement_id,
+    need,
+    publications: corpus.map(p => p.publication_id),
+  })
+
+  // Si exactement le même T01 a déjà été lancé dans cette session,
+  // on reprend le suivi au lieu de créer un doublon.
   try {
-    return await postJson(url, body)
-  } catch (error) {
-    if (!isNetworkError(error)) throw error
+    const saved = JSON.parse(sessionStorage.getItem('quirites:t01:activeJob') || 'null')
+    if (saved?.job_id && saved?.signature === signature && saved?.base_url === url) {
+      return await pollCloudJob(url, saved.job_id)
+    }
+  } catch {}
 
-    const recovered = await recoverGeneratedResult(url, requestId)
-    if (recovered) return recovered
+  const created = await fetchJson(`${url}/jobs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
 
-    throw new Error(
-      'La connexion avec le service IA a été interrompue avant la réception du résultat. ' +
-      'La génération n’est pas relancée automatiquement pour éviter un doublon ; utilisez « Réessayer ».',
-    )
+  if (!created?.ok || !created?.job_id) {
+    throw new Error(created?.error || "Le job T01 n'a pas pu être créé.")
   }
+
+  sessionStorage.setItem('quirites:t01:activeJob', JSON.stringify({
+    job_id: created.job_id,
+    signature,
+    base_url: url,
+    created_at: Date.now(),
+  }))
+
+  return pollCloudJob(url, created.job_id)
+}
+
+export async function generateTreatment({ treatment, need, publications, contents }) {
+  if (treatment?.traitement_id !== 'T01') {
+    throw new Error('Cette branche Cloud est actuellement réservée au résumé analytique T01.')
+  }
+
+  const url = getTreatmentUrl()
+  const corpus = buildCorpus(publications, contents)
+
+  return generateViaCloud({ url, treatment, need, corpus })
 }
