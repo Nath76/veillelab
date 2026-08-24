@@ -1,12 +1,19 @@
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-// T01 Cloud Run — première intégration réelle.
-// Le chatbot et les autres fonctions de l'application ne sont pas modifiés.
-const CLOUD_T01_URL = 'https://veillelab-cloud-backend2-633342872265.europe-west9.run.app'
-
 function getTreatmentUrl() {
-  const configured = import.meta.env.VITE_TREATMENT_API_URL?.trim()
-  return (configured || CLOUD_T01_URL).replace(/\/+$/, '')
+  const cloudUrl = import.meta.env.VITE_TREATMENT_API_URL?.trim()
+  if (cloudUrl) return cloudUrl.replace(/\/+$/, '')
+
+  // Fallback temporaire : tant que la variable Cloud n'est pas configurée,
+  // l'ancienne branche Apps Script reste disponible.
+  const legacyUrl = import.meta.env.VITE_GRAPH_CHAT_URL?.trim()
+  if (legacyUrl) return legacyUrl.replace(/\/+$/, '')
+
+  throw new Error("L'URL du service IA n'est pas configurée.")
+}
+
+function isCloudRunUrl(url) {
+  return /\.run\.app(?:\/|$)/i.test(url)
 }
 
 function buildCorpus(publications, contents) {
@@ -24,7 +31,6 @@ function buildCorpus(publications, contents) {
 
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, options)
-
   if (!response.ok) {
     let detail = ''
     try {
@@ -33,13 +39,12 @@ async function fetchJson(url, options = {}) {
     } catch {}
     throw new Error(`Le service IA a répondu ${response.status}.${detail}`)
   }
-
   return response.json()
 }
 
 async function pollCloudJob(baseUrl, jobId) {
-  // Le traitement vit côté serveur : une interruption du navigateur
-  // ne détruit plus le job. Le front ne fait que relire son état.
+  // 20 minutes : le front n'impose plus la durée du traitement,
+  // mais évite une attente infinie si un job est réellement bloqué.
   const maxAttempts = 400
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
@@ -59,17 +64,16 @@ async function pollCloudJob(baseUrl, jobId) {
         throw new Error(job.error_message || 'La génération T01 a échoué.')
       }
     } catch (error) {
-      const message = String(error?.message || '')
-      // Les erreurs métier sont remontées immédiatement.
-      // Une simple coupure réseau pendant le polling est tolérée.
-      if (/a échoué|Anthropic|chunk|corpus|provenance|secret|invalide|inaccessible/i.test(message)) {
+      // Une coupure de réseau pendant le polling ne fait pas perdre le job.
+      // On continue, sauf erreur métier explicite.
+      if (/a échoué|HTTP|Anthropic|chunk|corpus|provenance|secret/i.test(String(error?.message || ''))) {
         throw error
       }
     }
   }
 
   throw new Error(
-    "Le traitement est toujours en cours côté serveur. Son résultat n'est pas perdu ; rechargez la page puis relancez la même demande pour reprendre le suivi."
+    "Le traitement est toujours en cours côté serveur. Son résultat n'est pas perdu, mais l'attente dans cette page a expiré."
   )
 }
 
@@ -95,8 +99,8 @@ async function generateViaCloud({ url, treatment, need, corpus }) {
     publications: corpus.map(p => p.publication_id),
   })
 
-  // Si exactement le même T01 a déjà été lancé dans cette session,
-  // on reprend le suivi au lieu de créer un doublon.
+  // Si la même génération a été lancée dans cette session et n'a pas fini,
+  // on reprend le polling au lieu de créer un doublon.
   try {
     const saved = JSON.parse(sessionStorage.getItem('quirites:t01:activeJob') || 'null')
     if (saved?.job_id && saved?.signature === signature && saved?.base_url === url) {
@@ -124,13 +128,46 @@ async function generateViaCloud({ url, treatment, need, corpus }) {
   return pollCloudJob(url, created.job_id)
 }
 
-export async function generateTreatment({ treatment, need, publications, contents }) {
-  if (treatment?.traitement_id !== 'T01') {
-    throw new Error('Cette branche Cloud est actuellement réservée au résumé analytique T01.')
+async function generateViaLegacyAppsScript({ url, treatment, need, corpus }) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      action: 'generateTreatment',
+      treatment_id: treatment.traitement_id,
+      need,
+      treatment: {
+        traitement_id: treatment.traitement_id,
+        nom_traitement: treatment.nom_traitement,
+        objectif: treatment.objectif,
+        regime_IA: treatment.regime_IA,
+        format_sortie: treatment.format_sortie,
+        provenance_exigee: treatment.provenance_exigee,
+        prompt_systeme: treatment.prompt_systeme,
+      },
+      corpus,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Le service IA a répondu ${response.status}.`)
   }
 
+  const payload = await response.json()
+  if (!payload?.ok) {
+    throw new Error(payload?.error || 'Le service IA a retourné une erreur.')
+  }
+
+  return payload.data
+}
+
+export async function generateTreatment({ treatment, need, publications, contents }) {
   const url = getTreatmentUrl()
   const corpus = buildCorpus(publications, contents)
 
-  return generateViaCloud({ url, treatment, need, corpus })
+  if (isCloudRunUrl(url)) {
+    return generateViaCloud({ url, treatment, need, corpus })
+  }
+
+  return generateViaLegacyAppsScript({ url, treatment, need, corpus })
 }
