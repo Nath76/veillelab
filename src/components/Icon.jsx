@@ -26,6 +26,7 @@ export default function Icon({ name, size = 20 }) {
     chevron: <><path d="m9 6 6 6-6 6" {...common}/></>,
     layers: <><path d="m12 3 9 5-9 5-9-5 9-5Z" {...common}/><path d="m3 12 9 5 9-5M3 16l9 5 9-5" {...common}/></>,
     eye: <><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" {...common}/><circle cx="12" cy="12" r="2.5" {...common}/></>,
+    link: <><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" {...common}/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1" {...common}/></>,
   }
   return <svg {...props}>{paths[name] || paths.info}</svg>
 }
