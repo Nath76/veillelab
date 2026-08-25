@@ -35,3 +35,21 @@
   .expertise-screen>.left-rail{padding:22px 16px!important}
   .expertise-screen>.detail-drawer{padding:24px 18px!important}
 }
+
+/* Firefox / postes gérés : sécurise l'interaction des nœuds SVG. */
+.expertise-screen .constellation-node{pointer-events:all;cursor:pointer}
+.expertise-screen .constellation-node *{pointer-events:none}
+.expertise-screen .constellation-node:focus{outline:none}
+
+/* Robust SVG hit-testing: decorative layers never intercept clicks. */
+.expertise-screen .pointer-pass,
+.expertise-screen .cluster-halo,
+.expertise-screen .ghost-cluster,
+.expertise-screen .constellation-edge,
+.expertise-screen .controlled-cluster-name,
+.expertise-screen .node-label,
+.expertise-screen .hub-ring,
+.expertise-screen .selection-halo{pointer-events:none!important;}
+.expertise-screen .constellation-node{pointer-events:all!important;cursor:pointer;}
+.expertise-screen .constellation-node .node-hit-target{pointer-events:all!important;fill:transparent!important;stroke:none!important;}
+.expertise-screen .constellation-node circle:not(.node-hit-target){pointer-events:none!important;}
