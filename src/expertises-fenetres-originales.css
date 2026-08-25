@@ -54,6 +54,6 @@
 .expertise-screen .constellation-node .node-hit-target{pointer-events:all!important;fill:transparent!important;stroke:none!important;}
 .expertise-screen .constellation-node circle:not(.node-hit-target){pointer-events:none!important;}
 .expertise-screen .constellation-shell.model-b .controlled-cluster-name {
-  font-size: 19px !important;
+  font-size: 21px !important;
   font-weight: 800;
 }
