@@ -25,8 +25,13 @@
   inset:0;
   overflow:hidden;
   background:
-    linear-gradient(90deg,rgba(4,20,35,.02) 0%,rgba(4,20,35,.02) 68%,rgba(4,20,35,.42) 100%),
-    url('./quirites-lab-lighthouse.png') left center/cover no-repeat;
+    linear-gradient(
+      90deg,
+      rgba(4,20,35,0.00) 0%,
+      rgba(4,20,35,0.00) 72%,
+      rgba(4,20,35,0.28) 100%
+    ),
+    url('./quirites-lab-lighthouse.png') left center / cover no-repeat;
 }
 
 /* Le visuel validé contient déjà phare, mer et côte */
