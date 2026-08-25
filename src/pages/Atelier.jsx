@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import Icon from '../components/Icon.jsx'
 import ReflectionMap from '../components/ReflectionMap.jsx'
 import { generateTreatment } from '../services/treatmentApi.js'
+import { normalize } from '../lib/text.js'
 
 const regimeClass={'Synthèse stricte':'strict','Extraction stricte':'extract','Enrichissement contrôlé':'enrich'}
 const ALLOWED_TREATMENTS=[
@@ -108,6 +109,7 @@ function Regime({cls,title,children}){return <div className={`qvl-regime-info ${
 
 function Workspace({treatment,data,onBack,initialNeed=''}){
  if(treatment.traitement_id==='T03') return <ReflectionWorkspace treatment={treatment} data={data} onBack={onBack} initialNeed={initialNeed}/>
+ if(treatment.traitement_id==='T04') return <RecommendationWorkspace treatment={treatment} data={data} onBack={onBack} initialNeed={initialNeed}/>
  const pubs=data.publications.filter(p=>p.chunk_count>0).slice(0,20)
  const isT01=treatment.traitement_id==='T01'
  const [selected,setSelected]=useState(pubs.length?[pubs[0].publication_id]:[])
@@ -119,6 +121,143 @@ function Workspace({treatment,data,onBack,initialNeed=''}){
  const togglePublication=id=>{setGeneration(null);setError('');if(isT01){setSelected([id]);return}setSelected(s=>s.includes(id)?s.filter(x=>x!==id):[...s,id])}
  const runGeneration=async()=>{if(!isT01||!need.trim()||!selectedPubs.length||loading)return;setLoading(true);setError('');try{const result=await generateTreatment({treatment,need:need.trim(),publications:selectedPubs,contents:data.contents,nodes:data.nodes,relations:data.relations});setGeneration(result)}catch(e){setError(e?.message||String(e));setGeneration(null)}finally{setLoading(false)}}
  return <main className="page workspace-page"><button className="back-link" onClick={onBack}><Icon name="back"/>Retour à l’atelier</button><div className="workspace-head"><div><h1>{treatment.nom_traitement}</h1><p>{treatment.fonction}</p></div><span className={`regime ${regimeClass[treatment.regime_IA]||''}`}>{treatment.regime_IA}</span></div><div className="workspace-layout"><aside className="corpus-panel"><h3>Corpus sélectionné <span>{selected.length} source{selected.length>1?'s':''}</span></h3>{isT01&&<div className="corpus-scope-note"><Icon name="info" size={15}/><span>T01 est défini pour une publication : choisissez une source.</span></div>}{pubs.map(p=><label className={`corpus-item ${selected.includes(p.publication_id)?'selected':''}`} key={p.publication_id}><input type={isT01?'radio':'checkbox'} name={isT01?'t01-source':undefined} checked={selected.includes(p.publication_id)} onChange={()=>togglePublication(p.publication_id)}/>{p.has_image?<img src={`.${p.image_path}`} alt=""/>:<div className="mini-placeholder">{p.publication_id}</div>}<div><strong>{p.titre}</strong><span>{p.organisme_producteur} · {p.année_publication}</span></div></label>)}</aside><section className="production-panel"><div className="user-need"><label>Besoin utilisateur</label><textarea value={need} onChange={e=>{setNeed(e.target.value);setError('')}} placeholder="Décrivez le besoin, la question ou le livrable attendu…"/></div><div className="production-sheet"><h3>Cadre du traitement</h3><Row label="Objectif" value={treatment.objectif}/><Row label="Périmètre" value={treatment.perimetre}/><Row label="Documents compatibles" value={treatment.type_document_compatible}/><Row label="Données mobilisées" value={treatment.donnees_mobilisees}/><Row label="Format de sortie" value={treatment.format_sortie}/><Row label="Provenance exigée" value={treatment.provenance_exigee}/>{isT01?<GenerationT01 generation={generation} loading={loading} error={error} need={need} selectedCount={selectedPubs.length} onGenerate={runGeneration}/>:<div className="production-placeholder"><Icon name="spark" size={30}/><strong>Génération à connecter</strong><p>Le moteur commun sera branché progressivement.</p><button className="btn primary" disabled>Générer avec le corpus sélectionné</button></div>}</div></section><aside className="source-rules"><h3>Règles de production</h3><p><strong>Régime IA :</strong> {treatment.regime_IA}</p><p><strong>Interaction :</strong> {treatment.interaction_utilisateur}</p><p><strong>Mode :</strong> {treatment.mode_generation}</p><div className="source-rule"><Icon name="book"/><span>Les contenus produits doivent conserver leur provenance lorsque le traitement l’exige.</span></div>{isT01&&<div className="source-rule engine-rule"><Icon name="spark"/><span>Le moteur parcourt la matière documentaire nécessaire, puis vérifie chaque provenance avant d’afficher le résumé.</span></div>}</aside></div></main>
+}
+
+
+const RECOMMENDATIONS_SCREEN_STYLES=`
+.qvl-reco-v02{padding-top:6px;color:#102a56}
+.qvl-reco-v02 .qvl-reco-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:4px 0 18px}
+.qvl-reco-v02 .qvl-reco-title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.qvl-reco-v02 .qvl-reco-title-row h1{margin:0;color:#102a56;font-size:36px;line-height:1.08;letter-spacing:-.035em}.qvl-reco-v02 .qvl-reco-head p{margin:7px 0 0;color:#405b82;font-size:16px;line-height:1.5;max-width:920px}
+.qvl-reco-v02 .qvl-reco-help{border:1px solid #cbdaf1;background:#fff;color:#1d4f9e;border-radius:10px;padding:11px 14px;font-weight:750;display:flex;gap:8px;align-items:center;white-space:nowrap}
+.qvl-reco-v02 .qvl-reco-scope{border:1px solid #d6e0ef;border-radius:14px;background:#fff;padding:18px;box-shadow:0 5px 16px rgba(28,52,86,.05);margin-bottom:18px}
+.qvl-reco-v02 .qvl-reco-fields{display:grid;grid-template-columns:minmax(230px,.8fr) minmax(330px,1.25fr) minmax(300px,1fr);gap:18px;align-items:end}.qvl-reco-v02 .qvl-reco-field{min-width:0}.qvl-reco-v02 .qvl-reco-field>label{display:flex;align-items:center;gap:6px;margin:0 0 7px;color:#16345e;font-size:13px;font-weight:800}.qvl-reco-v02 .qvl-reco-field input[type='text']{width:100%;height:48px;border:1px solid #cdd9ea;border-radius:9px;padding:0 13px;color:#173354;background:#fff;font:600 15px/1.2 inherit;outline:none}.qvl-reco-v02 .qvl-reco-field input[type='text']:focus{border-color:#6f9ee8;box-shadow:0 0 0 3px rgba(59,130,246,.10)}
+.qvl-reco-v02 .qvl-selector{position:relative}.qvl-reco-v02 .qvl-selector-btn{width:100%;height:48px;border:1px solid #cdd9ea;border-radius:9px;background:#fff;color:#173b76;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:750;cursor:pointer;text-align:left}.qvl-reco-v02 .qvl-selector-btn>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.qvl-reco-v02 .qvl-selector-panel{position:absolute;z-index:35;left:0;right:0;top:54px;background:#fff;border:1px solid #cbd8ea;border-radius:12px;box-shadow:0 18px 42px rgba(28,52,86,.18);padding:10px;max-height:350px;overflow:auto}.qvl-reco-v02 .qvl-selector-panel label{display:flex;align-items:flex-start;gap:9px;padding:9px;border-radius:8px;color:#294465;font-size:13px;line-height:1.35;cursor:pointer}.qvl-reco-v02 .qvl-selector-panel label:hover{background:#f4f8fd}.qvl-reco-v02 .qvl-selector-panel input{margin-top:2px;accent-color:#1d5fc3}
+.qvl-reco-v02 .qvl-corpus-search{display:flex;align-items:center;gap:8px;border:1px solid #d9e2ee;border-radius:8px;padding:8px 10px;margin:3px 2px 8px}.qvl-reco-v02 .qvl-corpus-search input{border:0!important;height:auto!important;padding:0!important;box-shadow:none!important;min-width:0;flex:1;font-size:13px!important}.qvl-reco-v02 .qvl-corpus-option{display:grid!important;grid-template-columns:18px minmax(0,1fr);gap:9px!important}.qvl-reco-v02 .qvl-corpus-option b{display:block;color:#214f9b;font-size:11px;margin-bottom:2px}.qvl-reco-v02 .qvl-corpus-option strong{display:block;color:#183453;font-size:12.5px}.qvl-reco-v02 .qvl-corpus-option small{display:block;color:#718099;font-size:11px;margin-top:2px}
+.qvl-reco-v02 .qvl-reco-actions{display:flex;gap:10px;align-items:center;margin-top:16px}.qvl-reco-v02 .qvl-reco-primary,.qvl-reco-v02 .qvl-reco-secondary{min-height:42px;border-radius:8px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font-weight:800;cursor:pointer}.qvl-reco-v02 .qvl-reco-primary{border:1px solid #1b58b8;background:#1c5ec2;color:#fff}.qvl-reco-v02 .qvl-reco-primary:disabled{opacity:.42;cursor:not-allowed}.qvl-reco-v02 .qvl-reco-secondary{border:1px solid #d0dbea;background:#fff;color:#244d89}
+.qvl-reco-v02 .qvl-reco-rule{margin-left:auto;display:flex;align-items:center;gap:7px;color:#697a92;font-size:12px;line-height:1.4;max-width:520px}
+.qvl-reco-v02 .qvl-reco-result-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 13px}.qvl-reco-v02 .qvl-reco-result-count{margin-right:auto}.qvl-reco-v02 .qvl-reco-result-count strong{display:block;color:#122e55;font-size:20px}.qvl-reco-v02 .qvl-reco-result-count span{display:block;color:#60728e;font-size:12.5px;margin-top:3px}.qvl-reco-v02 .qvl-reco-filter{border:1px solid #d8e2ee;border-radius:10px;background:#fff;padding:9px 12px;color:#33506f;cursor:pointer;font-weight:750}.qvl-reco-v02 .qvl-reco-filter.active{background:#edf4ff;border-color:#b9d2fa;color:#1c56a8}.qvl-reco-v02 .qvl-reco-filter.unique.active{background:#effaf2;border-color:#c7ead0;color:#27733c}.qvl-reco-v02 .qvl-reco-sort{height:40px;border:1px solid #d3deeb;border-radius:9px;background:#fff;color:#2f4867;padding:0 10px}
+.qvl-reco-v02 .qvl-reco-layout{display:grid;grid-template-columns:minmax(0,1fr) 365px;gap:16px;align-items:start}.qvl-reco-v02 .qvl-reco-list{display:grid;gap:11px;min-width:0}.qvl-reco-v02 .qvl-reco-card{border:1px solid #dbe3ed;border-radius:12px;background:#fff;padding:16px 16px 15px;display:grid;grid-template-columns:minmax(0,1fr) 285px 40px;gap:16px;align-items:center;text-align:left;cursor:pointer;box-shadow:0 3px 10px rgba(28,52,86,.04)}.qvl-reco-v02 .qvl-reco-card:hover,.qvl-reco-v02 .qvl-reco-card.selected{border-color:#a9c6ef;box-shadow:0 8px 20px rgba(28,70,138,.08)}.qvl-reco-v02 .qvl-reco-main h3{margin:0 0 8px;color:#112d54;font-size:17px;line-height:1.32}.qvl-reco-v02 .qvl-reco-main p{margin:0 0 10px;color:#455d7d;font-size:14px;line-height:1.55}.qvl-reco-v02 .qvl-reco-badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:10.5px;font-weight:850;letter-spacing:.01em}.qvl-reco-v02 .qvl-reco-badge.convergent{background:#edf4ff;color:#205aaf}.qvl-reco-v02 .qvl-reco-badge.unique{background:#eef9f0;color:#27733c}.qvl-reco-v02 .qvl-reco-source-count{margin-left:9px;color:#60718b;font-size:12px}.qvl-reco-v02 .qvl-reco-sources-mini{border-left:1px solid #e4eaf1;padding-left:15px;display:grid;gap:7px}.qvl-reco-v02 .qvl-reco-source-mini{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;color:#244364;font-size:11.5px}.qvl-reco-v02 .qvl-reco-source-mini strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qvl-reco-v02 .qvl-reco-source-mini span{font-weight:750;color:#526887}.qvl-reco-v02 .qvl-reco-chevron{width:36px;height:36px;border:1px solid #d8e1ec;background:#fff;border-radius:8px;display:grid;place-items:center;color:#27579a}
+.qvl-reco-v02 .qvl-reco-detail{border:1px solid #dbe3ed;border-radius:12px;background:#fff;min-height:520px;box-shadow:0 4px 14px rgba(28,52,86,.05);overflow:hidden;position:sticky;top:84px}.qvl-reco-v02 .qvl-reco-detail-head{padding:14px 16px;border-bottom:1px solid #e8edf3;color:#164a99;font-weight:850;font-size:13px}.qvl-reco-v02 .qvl-reco-detail-body{padding:18px}.qvl-reco-v02 .qvl-reco-detail-body h2{margin:10px 0 12px;color:#102c53;font-size:20px;line-height:1.3}.qvl-reco-v02 .qvl-reco-meta{display:grid;grid-template-columns:84px 1fr;gap:6px 9px;color:#4c617e;font-size:12.5px;margin:14px 0}.qvl-reco-v02 .qvl-reco-meta b{color:#18365d}.qvl-reco-v02 .qvl-reco-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:13px 0}.qvl-reco-v02 .qvl-reco-metric{border:1px solid #e0e7ef;border-radius:9px;padding:10px;color:#35516f;font-size:12px}.qvl-reco-v02 .qvl-reco-metric b{font-size:18px;color:#1a4e96;margin-right:5px}.qvl-reco-v02 .qvl-reco-section-title{margin:16px 0 8px;color:#17385f;font-size:12.5px;font-weight:850}.qvl-reco-v02 .qvl-reco-summary{margin:0;color:#435b7a;font-size:13.5px;line-height:1.55}.qvl-reco-v02 .qvl-reco-proof{border:1px solid #e2e8f0;border-radius:9px;margin:8px 0;overflow:hidden}.qvl-reco-v02 .qvl-reco-proof button{width:100%;border:0;background:#fff;padding:10px 11px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;text-align:left;cursor:pointer;color:#264665}.qvl-reco-v02 .qvl-reco-proof button strong{font-size:11.5px}.qvl-reco-v02 .qvl-reco-proof button small{display:block;margin-top:2px;color:#738199;font-size:10.5px}.qvl-reco-v02 .qvl-reco-proof button span{font-size:11px;font-weight:800;color:#536b8d}.qvl-reco-v02 .qvl-reco-proof-excerpt{padding:10px 12px;border-top:1px solid #edf1f5;background:#fbfcfe;color:#496079;font-size:12px;line-height:1.55}.qvl-reco-v02 .qvl-reco-graph-context{margin-top:12px;border:1px solid #dbe5f4;border-radius:9px;background:#f8fbff;padding:10px}.qvl-reco-v02 .qvl-reco-graph-context p{margin:0 0 7px;color:#4b6482;font-size:11.5px}.qvl-reco-v02 .qvl-reco-linked{display:flex;flex-wrap:wrap;gap:6px}.qvl-reco-v02 .qvl-reco-linked span{border:1px solid #d4e0f0;background:#fff;border-radius:999px;padding:5px 7px;color:#315888;font-size:10.5px}
+.qvl-reco-v02 .qvl-reco-empty{border:1px dashed #cbd9eb;border-radius:14px;min-height:430px;background:#fbfdff;display:grid;place-items:center;text-align:center;padding:34px}.qvl-reco-v02 .qvl-reco-empty h2{margin:8px 0;color:#17345d;font-size:22px}.qvl-reco-v02 .qvl-reco-empty p{margin:0;max-width:680px;color:#5c6f89;font-size:14px;line-height:1.6}.qvl-reco-v02 .qvl-reco-note{margin-top:14px;border:1px solid #dce6f4;border-radius:9px;background:#f5f9ff;padding:11px 13px;color:#536982;font-size:12px;line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+@media(max-width:1180px){.qvl-reco-v02 .qvl-reco-fields{grid-template-columns:1fr 1fr}.qvl-reco-v02 .qvl-reco-field.corpus{grid-column:1/-1}.qvl-reco-v02 .qvl-reco-layout{grid-template-columns:1fr}.qvl-reco-v02 .qvl-reco-detail{position:static}.qvl-reco-v02 .qvl-reco-card{grid-template-columns:minmax(0,1fr) 245px 40px}}
+@media(max-width:760px){.qvl-reco-v02 .qvl-reco-head{display:block}.qvl-reco-v02 .qvl-reco-help{margin-top:10px;width:max-content}.qvl-reco-v02 .qvl-reco-title-row h1{font-size:30px}.qvl-reco-v02 .qvl-reco-fields{grid-template-columns:1fr}.qvl-reco-v02 .qvl-reco-field.corpus{grid-column:auto}.qvl-reco-v02 .qvl-reco-actions{align-items:stretch;flex-direction:column}.qvl-reco-v02 .qvl-reco-rule{margin-left:0}.qvl-reco-v02 .qvl-reco-card{grid-template-columns:1fr}.qvl-reco-v02 .qvl-reco-sources-mini{border-left:0;border-top:1px solid #e7ecf2;padding:10px 0 0}.qvl-reco-v02 .qvl-reco-chevron{display:none}}
+`
+
+const RECO_STOPWORDS=new Set('le la les un une des du de d et ou en dans sur pour par avec sans au aux ce cet cette ces son sa ses leur leurs plus moins afin vers entre qui que dont est sont etre être a à l d une'.split(/\s+/))
+function splitDomains(value){
+  if(Array.isArray(value)) return value.flatMap(splitDomains)
+  return String(value||'').split(/[;|,]/).map(x=>x.trim()).filter(Boolean)
+}
+function publicationDomains(pub){return [...new Set([...(splitDomains(pub?.domaine)),...(splitDomains(pub?.domaine_large)),...(splitDomains(pub?.domaines))])]}
+function recoTokens(value){return normalize(String(value||'')).split(/[^a-z0-9]+/).filter(x=>x.length>2&&!RECO_STOPWORDS.has(x))}
+function recoSimilarity(a,b){const A=new Set(recoTokens(a)),B=new Set(recoTokens(b));if(!A.size||!B.size)return 0;let inter=0;A.forEach(x=>{if(B.has(x))inter++});return inter/Math.max(A.size,B.size)}
+function chunkIdsOf(node){return String(node?.chunk_id_source||'').split(';').map(x=>x.trim()).filter(Boolean)}
+function pagesOf(node){return String(node?.page_source||'').split(';').map(x=>x.trim()).filter(Boolean)}
+function recommendationContext(node,data,nodeMap){
+  const chunks=chunkIdsOf(node).map(id=>(data.contents||[]).find(c=>c.chunk_id===id)?.texte||'').join(' ')
+  const related=(data.relations||[]).filter(r=>r.source_id===node.node_id||r.cible_id===node.node_id).slice(0,12).map(r=>nodeMap[r.source_id===node.node_id?r.cible_id:r.source_id]?.libelle||'').join(' ')
+  return `${node.libelle||''} ${chunks} ${related}`
+}
+function recommendationScore(node,subject,data,nodeMap,pubMap){
+  const context=normalize(`${recommendationContext(node,data,nodeMap)} ${pubMap[node.publication_id]?.titre||''}`)
+  const exact=normalize(subject)
+  const tokens=[...new Set(recoTokens(subject))]
+  let score=exact.length>4&&context.includes(exact)?8:0
+  tokens.forEach(t=>{if(context.includes(t))score+=2})
+  return score
+}
+function sourceFromRecoNode(node,data,pubMap){
+  const chunkIds=chunkIdsOf(node)
+  const chunk=chunkIds.map(id=>(data.contents||[]).find(c=>c.chunk_id===id)).find(Boolean)
+  const pub=pubMap[node.publication_id]||{}
+  return {node_id:node.node_id,publication_id:node.publication_id,titre:pub.titre||node.publication_id,organisme:pub.organisme_producteur||'',annee:pub.année_publication||'',page:pagesOf(node).join(' ; '),chunk_ids:chunkIds,excerpt:chunk?.texte||'',formulation:node.libelle||''}
+}
+function groupRecommendationNodes(nodes,data,subject){
+  const nodeMap=Object.fromEntries((data.nodes||[]).map(n=>[n.node_id,n]))
+  const pubMap=Object.fromEntries((data.publications||[]).map(p=>[p.publication_id,p]))
+  const scored=nodes.map(n=>({...n,_score:recommendationScore(n,subject,data,nodeMap,pubMap)})).filter(n=>n._score>0).sort((a,b)=>b._score-a._score)
+  const groups=[]
+  scored.forEach(node=>{
+    let group=groups.find(g=>recoSimilarity(g.label,node.libelle)>=.72)
+    if(!group){group={id:`reco-${groups.length+1}`,label:node.libelle||'Recommandation',nodes:[],score:node._score};groups.push(group)}
+    group.nodes.push(node);group.score=Math.max(group.score,node._score)
+  })
+  return groups.map(g=>{
+    const sources=g.nodes.map(n=>sourceFromRecoNode(n,data,pubMap))
+    const publicationIds=[...new Set(sources.map(s=>s.publication_id).filter(Boolean))]
+    return {...g,status:publicationIds.length>1?'convergent':'unique',sources,publicationIds,summary:g.nodes.length>1?'Plusieurs formulations proches ont été rapprochées. Les formulations originales restent accessibles dans les sources.':g.label,linked:[...new Set(g.nodes.flatMap(n=>(data.relations||[]).filter(r=>r.source_id===n.node_id||r.cible_id===n.node_id).slice(0,8).map(r=>nodeMap[r.source_id===n.node_id?r.cible_id:r.source_id]?.libelle).filter(Boolean)))].slice(0,10)}
+  })
+}
+
+function RecommendationWorkspace({treatment,data,onBack,initialNeed=''}){
+  const pubs=useMemo(()=>data.publications.filter(p=>p.chunk_count>0),[data])
+  const domainOptions=useMemo(()=>[...new Set(pubs.flatMap(publicationDomains))].sort((a,b)=>a.localeCompare(b,'fr')),[pubs])
+  const [domains,setDomains]=useState([])
+  const [subject,setSubject]=useState(initialNeed)
+  const [selectedPubs,setSelectedPubs]=useState([])
+  const [domainOpen,setDomainOpen]=useState(false)
+  const [corpusOpen,setCorpusOpen]=useState(false)
+  const [corpusSearch,setCorpusSearch]=useState('')
+  const [results,setResults]=useState(null)
+  const [selectedReco,setSelectedReco]=useState(null)
+  const [statusFilter,setStatusFilter]=useState('all')
+  const [sort,setSort]=useState('pertinence')
+  const [openProofs,setOpenProofs]=useState(new Set())
+  const [showGraphContext,setShowGraphContext]=useState(false)
+
+  const pubsInDomains=useMemo(()=>domains.length?pubs.filter(p=>publicationDomains(p).some(d=>domains.includes(d))):[],[pubs,domains])
+  const pubMap=useMemo(()=>Object.fromEntries(pubs.map(p=>[p.publication_id,p])),[pubs])
+  const selectedSet=useMemo(()=>new Set(selectedPubs),[selectedPubs])
+  const corpusMatches=useMemo(()=>{const q=normalize(corpusSearch);return pubsInDomains.filter(p=>!q||normalize(`${p.publication_id} ${p.titre} ${p.organisme_producteur}`).includes(q))},[pubsInDomains,corpusSearch])
+  const activePubs=selectedPubs.length?pubsInDomains.filter(p=>selectedSet.has(p.publication_id)):pubsInDomains
+  const activeIds=useMemo(()=>new Set(activePubs.map(p=>p.publication_id)),[activePubs])
+  const recoNodes=useMemo(()=>(data.nodes||[]).filter(n=>normalize(n.type_noeud)==='recommandation'&&activeIds.has(n.publication_id)),[data,activeIds])
+
+  const toggleDomain=d=>{setDomains(s=>s.includes(d)?s.filter(x=>x!==d):[...s,d]);setSelectedPubs([]);setResults(null);setSelectedReco(null)}
+  const togglePub=id=>{setSelectedPubs(s=>s.includes(id)?s.filter(x=>x!==id):[...s,id]);setResults(null);setSelectedReco(null)}
+  const reset=()=>{setDomains([]);setSubject('');setSelectedPubs([]);setResults(null);setSelectedReco(null);setStatusFilter('all');setCorpusSearch('');setOpenProofs(new Set());setShowGraphContext(false)}
+  const run=()=>{
+    if(!domains.length||!subject.trim())return
+    const grouped=groupRecommendationNodes(recoNodes,data,subject.trim())
+    setResults(grouped);setSelectedReco(grouped[0]||null);setStatusFilter('all');setOpenProofs(new Set());setShowGraphContext(false);setDomainOpen(false);setCorpusOpen(false)
+  }
+  const filteredResults=useMemo(()=>{
+    if(!results)return []
+    let items=statusFilter==='all'?results:results.filter(r=>r.status===statusFilter)
+    items=[...items]
+    if(sort==='sources')items.sort((a,b)=>b.publicationIds.length-a.publicationIds.length||b.score-a.score)
+    else items.sort((a,b)=>b.score-a.score||b.publicationIds.length-a.publicationIds.length)
+    return items
+  },[results,statusFilter,sort])
+  const counts={all:results?.length||0,convergent:results?.filter(r=>r.status==='convergent').length||0,unique:results?.filter(r=>r.status==='unique').length||0}
+  const sourcePublicationCount=results?[...new Set(results.flatMap(r=>r.publicationIds))].length:0
+  const toggleProof=key=>setOpenProofs(s=>{const n=new Set(s);n.has(key)?n.delete(key):n.add(key);return n})
+  const domainLabel=domains.length?domains.length===1?domains[0]:`${domains.length} domaines`:'Choisir un ou plusieurs domaines'
+  const corpusLabel=selectedPubs.length?`${selectedPubs.length} publication${selectedPubs.length>1?'s':''} choisie${selectedPubs.length>1?'s':''}`:'Rechercher dans le corpus du domaine'
+
+  return <main className="page qvl-reco-v02">
+    <style>{RECOMMENDATIONS_SCREEN_STYLES}</style>
+    <button className="back-link" onClick={onBack}><Icon name="back"/>Retour à l’atelier</button>
+    <header className="qvl-reco-head"><div><div className="qvl-reco-title-row"><h1>Extraction de recommandations</h1><span className="regime extract">Extraction stricte</span></div><p>Identifiez et comparez les recommandations formulées dans les publications sur un sujet donné.</p></div><button className="qvl-reco-help" type="button" title="T04 mobilise les domaines, le sujet, les nœuds recommandation et leurs preuves."><Icon name="info" size={16}/>Comment ça fonctionne ?</button></header>
+
+    <section className="qvl-reco-scope">
+      <div className="qvl-reco-fields">
+        <div className="qvl-reco-field"><label>Domaine(s) <Icon name="info" size={14}/></label><div className="qvl-selector"><button type="button" className="qvl-selector-btn" onClick={()=>{setDomainOpen(v=>!v);setCorpusOpen(false)}}><span>{domainLabel}</span><Icon name="chevron" size={15}/></button>{domainOpen&&<div className="qvl-selector-panel">{domainOptions.map(d=><label key={d}><input type="checkbox" checked={domains.includes(d)} onChange={()=>toggleDomain(d)}/><span>{d}</span></label>)}</div>}</div></div>
+        <div className="qvl-reco-field"><label>Sujet (obligatoire) <Icon name="info" size={14}/></label><input type="text" value={subject} onChange={e=>{setSubject(e.target.value);setResults(null);setSelectedReco(null)}} placeholder="Ex. : Prévention des violences envers les élus"/></div>
+        <div className="qvl-reco-field corpus"><label>Corpus <Icon name="info" size={14}/></label><div className="qvl-selector"><button type="button" className="qvl-selector-btn" disabled={!domains.length} onClick={()=>{setCorpusOpen(v=>!v);setDomainOpen(false)}}><span>{corpusLabel}</span><Icon name="chevron" size={15}/></button>{corpusOpen&&<div className="qvl-selector-panel"><div className="qvl-corpus-search"><Icon name="search" size={15}/><input value={corpusSearch} onChange={e=>setCorpusSearch(e.target.value)} placeholder="Titre, organisme, identifiant…"/></div>{corpusMatches.map(p=><label className="qvl-corpus-option" key={p.publication_id}><input type="checkbox" checked={selectedPubs.includes(p.publication_id)} onChange={()=>togglePub(p.publication_id)}/><span><b>{p.publication_id}</b><strong>{p.titre}</strong><small>{p.organisme_producteur}{p.année_publication?` · ${p.année_publication}`:''}</small></span></label>)}{!corpusMatches.length&&<div className="qvl-reco-note">Aucune publication ne correspond au domaine et à la recherche.</div>}</div>}</div></div>
+      </div>
+      <div className="qvl-reco-actions"><button className="qvl-reco-primary" type="button" onClick={run} disabled={!domains.length||!subject.trim()}><Icon name="spark" size={16}/>Générer les recommandations</button><button className="qvl-reco-secondary" type="button" onClick={reset}><Icon name="reset" size={16}/>Réinitialiser</button><div className="qvl-reco-rule"><Icon name="info" size={15}/><span>{selectedPubs.length?`Analyse limitée aux ${selectedPubs.length} publications choisies.`:`Sans sélection manuelle, T04 recherche parmi les ${pubsInDomains.length} publications du ou des domaines retenus.`} {recoNodes.length} nœud{recoNodes.length>1?'s':''} « recommandation » disponible{recoNodes.length>1?'s':''} dans ce périmètre.</span></div></div>
+    </section>
+
+    {!results?<div className="qvl-reco-empty"><div><span className="generated-kicker">T04 · EXTRACTION STRICTE</span><h2>Cadrez le sujet avant d’extraire</h2><p>Sélectionnez au moins un domaine de la base, formulez votre sujet, puis laissez T04 repérer les nœuds <b>recommandation</b> correspondants et revenir à leurs pages, timecodes et chunks sources.</p></div></div>:<>
+      <div className="qvl-reco-result-head"><div className="qvl-reco-result-count"><strong>{counts.all} recommandation{counts.all>1?'s':''} identifiée{counts.all>1?'s':''}</strong><span>dans {sourcePublicationCount} publication{sourcePublicationCount>1?'s':''} · sujet : {subject}</span></div><button type="button" className={`qvl-reco-filter ${statusFilter==='all'?'active':''}`} onClick={()=>setStatusFilter('all')}>{counts.all} Toutes</button><button type="button" className={`qvl-reco-filter ${statusFilter==='convergent'?'active':''}`} onClick={()=>setStatusFilter('convergent')}>{counts.convergent} Convergentes</button><button type="button" className={`qvl-reco-filter unique ${statusFilter==='unique'?'active':''}`} onClick={()=>setStatusFilter('unique')}>{counts.unique} Uniques</button><select className="qvl-reco-sort" value={sort} onChange={e=>setSort(e.target.value)}><option value="pertinence">Pertinence</option><option value="sources">Nombre de sources</option></select></div>
+      <div className="qvl-reco-layout">
+        <section className="qvl-reco-list">{filteredResults.length?filteredResults.map(r=><button type="button" className={`qvl-reco-card ${selectedReco?.id===r.id?'selected':''}`} key={r.id} onClick={()=>{setSelectedReco(r);setShowGraphContext(false)}}><div className="qvl-reco-main"><h3>{r.label}</h3><p>{r.summary}</p><span className={`qvl-reco-badge ${r.status}`}>{r.status==='convergent'?'RECOMMANDATION CONVERGENTE':'RECOMMANDATION UNIQUE'}</span><span className="qvl-reco-source-count">{r.publicationIds.length} source{r.publicationIds.length>1?'s':''}</span></div><div className="qvl-reco-sources-mini">{r.sources.slice(0,3).map((s,i)=><div className="qvl-reco-source-mini" key={`${s.node_id}-${i}`}><strong>{s.publication_id} — {s.titre}</strong><span>{s.page?`p./TC ${s.page}`:'source'}</span></div>)}</div><span className="qvl-reco-chevron"><Icon name="chevron" size={17}/></span></button>):<div className="qvl-reco-empty"><div><h2>Aucune recommandation dans ce filtre</h2><p>Essayez l’ensemble des résultats ou reformulez le sujet.</p></div></div>}</section>
+        <aside className="qvl-reco-detail">{selectedReco?<><div className="qvl-reco-detail-head">Détail de la recommandation</div><div className="qvl-reco-detail-body"><span className={`qvl-reco-badge ${selectedReco.status}`}>{selectedReco.status==='convergent'?'RECOMMANDATION CONVERGENTE':'RECOMMANDATION UNIQUE'}</span><h2>{selectedReco.label}</h2><div className="qvl-reco-meta"><b>Relative à :</b><span>{subject}</span><b>Domaine(s) :</b><span>{domains.join(' · ')}</span></div><div className="qvl-reco-metrics"><div className="qvl-reco-metric"><b>{selectedReco.publicationIds.length}</b>source{selectedReco.publicationIds.length>1?'s':''}</div><div className="qvl-reco-metric"><b>{selectedReco.sources.filter(s=>s.page).length}</b>preuve{selectedReco.sources.filter(s=>s.page).length>1?'s':''} paginée{selectedReco.sources.filter(s=>s.page).length>1?'s':''}</div></div><div className="qvl-reco-section-title">Synthèse de la recommandation</div><p className="qvl-reco-summary">{selectedReco.summary}</p><div className="qvl-reco-section-title">Sources et formulations originales</div>{selectedReco.sources.map((s,i)=>{const key=`${selectedReco.id}-${s.node_id}-${i}`;const open=openProofs.has(key);return <div className="qvl-reco-proof" key={key}><button type="button" onClick={()=>toggleProof(key)}><span><strong>{s.publication_id} — {s.titre}</strong><small>{s.organisme}{s.annee?` · ${s.annee}`:''}</small></span><span>{s.page?`p./TC ${s.page}`:'Preuve'} {open?'⌃':'⌄'}</span></button>{open&&<div className="qvl-reco-proof-excerpt"><b>Formulation structurée :</b> {s.formulation}{s.excerpt&&<><br/><br/><b>Extrait source :</b> {s.excerpt.slice(0,700)}{s.excerpt.length>700?'…':''}</>}</div>}</div>})}<button className="qvl-reco-secondary" type="button" onClick={()=>setShowGraphContext(v=>!v)}><Icon name="graph" size={16}/>{showGraphContext?'Masquer le contexte graphe':'Voir le contexte graphe'}</button>{showGraphContext&&<div className="qvl-reco-graph-context"><p>Entités directement reliées aux nœuds recommandation retenus :</p><div className="qvl-reco-linked">{selectedReco.linked.length?selectedReco.linked.map(x=><span key={x}>{x}</span>):<span>Aucune relation directe disponible</span>}</div></div>}</div></>:<div className="qvl-reco-detail-body"><p>Sélectionnez une recommandation pour afficher ses sources et son contexte.</p></div>}</aside>
+      </div>
+      <div className="qvl-reco-note"><Icon name="info" size={15}/><span>Les recommandations affichées proviennent des nœuds « recommandation » du graphe et de leurs preuves documentaires. Les formulations très proches ne sont regroupées que lorsque leur similarité est forte ; sinon elles restent séparées afin de ne pas altérer leur sens.</span></div>
+    </>}
+  </main>
 }
 
 const REFLECTION_SCREEN_STYLES=`
