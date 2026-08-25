@@ -2,12 +2,12 @@ import React, { useMemo, useState } from 'react'
 import Icon from '../components/Icon.jsx'
 import ExpertiseConstellation, { selectOverviewExpertises } from '../components/ExpertiseConstellation.jsx'
 import { normalize, sentenceCase } from '../lib/text.js'
-import '../expertises-fenetres.css'
+import '../expertises-fenetres-originales.css'
 
 const familyColor={
-  'Instrument / dispositif':'#7C5CFA',
-  'Méthode / savoir-faire':'#F59E0B',
-  'Problème public':'#14B86A',
+  'Instrument / dispositif':'#7258d9',
+  'Méthode / savoir-faire':'#ffb20e',
+  'Problème public':'#14af75',
 }
 
 function Accordion({title,children}){
@@ -29,8 +29,7 @@ export default function Expertises({data}){
   const clear=()=>{setSelected(null);setSearch('');setEntity('Toutes les entités');setFamily('Tous');setResetToken(x=>x+1)}
 
   return <main className={`screen graph-screen expertise-screen ${selected?'has-drawer':''}`}>
-    <aside className="left-rail expertise-left-window">
-      <section className="rail-section expertise-purpose"><span className="expertise-purpose-kicker">EXPERTISES MINISTÉRIELLES</span><h3>Pourquoi cette carte ?</h3><p>Les publications du ministère mobilisent une grande diversité d’expertises. Cette carte permet d’en explorer les savoir-faire et les associations.</p></section>
+    <aside className="left-rail">
       <section className="rail-section"><h3><Icon name="search" size={19}/>Rechercher</h3><div className="rail-search"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher une expertise, mot-clé…"/><Icon name="search" size={18}/></div>{found.length>0&&<div className="rail-results">{found.map(n=><button key={n.id} onClick={()=>{setSelected(n);setSearch('')}}>{n.label}<small>{n.family}</small></button>)}</div>}</section>
       <section className="rail-section"><h3>Afficher</h3><label className="radio-row"><input type="radio" checked readOnly/>Toutes les expertises</label><label className="radio-row muted-option" title="Disponible avec un profil utilisateur"><input type="radio" disabled/>Mes expertises uniquement</label></section>
       <section className="rail-section"><h3>Entité(s)</h3><select value={entity} onChange={e=>{setEntity(e.target.value);setSelected(null)}}>{entities.map(x=><option key={x}>{x}</option>)}</select></section>
@@ -43,7 +42,7 @@ export default function Expertises({data}){
       <ExpertiseConstellation nodes={filtered} edges={visibleEdges} selected={selected} onSelect={setSelected} nodeSize={nodeSize} linkDensity={linkDensity} resetToken={resetToken} fitToken={fitToken}/>
     </section>
 
-    {selected&&<aside className="detail-drawer expertise-detail-window">
+    {selected&&<aside className="detail-drawer">
       <button className="drawer-close" onClick={()=>setSelected(null)}><Icon name="close"/></button>
       <div className="drawer-type"><i style={{background:familyColor[selected.family]||'#ffb20e'}}></i>{selected.family}</div>
       <h2>{selected.label}</h2><p className="drawer-definition">{selected.definition}</p>
