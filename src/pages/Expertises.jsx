@@ -28,13 +28,154 @@ export default function Expertises({data}){
 
   const clear=()=>{setSelected(null);setSearch('');setEntity('Toutes les entités');setFamily('Tous');setResetToken(x=>x+1)}
 
-  return <main className={`screen graph-screen expertise-screen ${selected?'has-drawer':''}`}>
+  return (
+  <main className={`screen graph-screen expertise-screen ${selected ? 'has-drawer' : ''}`}>
     <aside className="left-rail">
-      <section className="rail-section"><h3><Icon name="search" size={19}/>Rechercher</h3><div className="rail-search"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher une expertise, mot-clé…"/><Icon name="search" size={18}/></div>{found.length>0&&<div className="rail-results">{found.map(n=><button key={n.id} onClick={()=>{setSelected(n);setSearch('')}}>{n.label}<small>{n.family}</small></button>)}</div>}</section>
-      <section className="rail-section"><h3>Afficher</h3><label className="radio-row"><input type="radio" checked readOnly/>Toutes les expertises</label><label className="radio-row muted-option" title="Disponible avec un profil utilisateur"><input type="radio" disabled/>Mes expertises uniquement</label></section>
-      <section className="rail-section"><h3>Entité(s)</h3><select value={entity} onChange={e=>{setEntity(e.target.value);setSelected(null)}}>{entities.map(x=><option key={x}>{x}</option>)}</select></section>
-      <section className="rail-section"><h3>Type d’expertise</h3><select value={family} onChange={e=>{setFamily(e.target.value);setSelected(null)}}><option>Tous</option><option>Instrument / dispositif</option><option>Méthode / savoir-faire</option><option>Problème public</option></select></section>
-      <section className="rail-section display-section"><h3>Affichage</h3><label>Taille des nœuds<input type="range" min="0.8" max="1.35" step="0.05" value={nodeSize} onChange={e=>setNodeSize(Number(e.target.value))}/><span><small>Petite</small><small>Grande</small></span></label><label>Densité des liens<input type="range" min="0.6" max="1.8" step="0.1" value={linkDensity} onChange={e=>setLinkDensity(Number(e.target.value))}/><span><small>Faible</small><small>Élevée</small></span></label></section>
+
+      <section className="rail-section expertise-intro">
+        <h3>Pourquoi cette carte ?</h3>
+
+        <p>
+          Le ministère de l’Intérieur produit chaque année une grande variété de
+          travaux sur les sujets relevant de ses domaines d’intervention. Il
+          combine ainsi, d’une manière unique, <strong>culture de l’action</strong> et
+          capacité collective à mettre en perspective les politiques publiques.
+        </p>
+
+        <p>
+          Cette production intellectuelle fait du ministère un contributeur
+          fondamental au débat public sur des sujets très divers : sécurité
+          (intérieure ; publique ; civile, routière), migrations et citoyenneté,
+          protection des populations, anticipation et gestion des crises, cultes
+          et laïcité, action publique territoriale.
+        </p>
+
+        <p>
+          Ces publications mobilisent un très large éventail d’expertises que
+          nous souhaitons montrer ici. Vous pourrez y voir et peut-être même y
+          découvrir les savoir-faire spécifiques d’une large diversité de métiers.
+        </p>
+      </section>
+
+      <section className="rail-section">
+        <h3>
+          <Icon name="search" size={19}/>
+          Rechercher
+        </h3>
+
+        <div className="rail-search">
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Rechercher une expertise, mot-clé…"
+          />
+          <Icon name="search" size={18}/>
+        </div>
+
+        {found.length > 0 && (
+          <div className="rail-results">
+            {found.map(n => (
+              <button
+                key={n.id}
+                onClick={() => {
+                  setSelected(n)
+                  setSearch('')
+                }}
+              >
+                {n.label}
+                <small>{n.family}</small>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="rail-section">
+        <h3>Afficher</h3>
+
+        <label className="radio-row">
+          <input type="radio" checked readOnly/>
+          Toutes les expertises
+        </label>
+
+        <label
+          className="radio-row muted-option"
+          title="Disponible avec un profil utilisateur"
+        >
+          <input type="radio" disabled/>
+          Mes expertises uniquement
+        </label>
+      </section>
+
+      <section className="rail-section">
+        <h3>Entité(s)</h3>
+
+        <select
+          value={entity}
+          onChange={e => {
+            setEntity(e.target.value)
+            setSelected(null)
+          }}
+        >
+          {entities.map(x => (
+            <option key={x}>{x}</option>
+          ))}
+        </select>
+      </section>
+
+      <section className="rail-section">
+        <h3>Type d’expertise</h3>
+
+        <select
+          value={family}
+          onChange={e => {
+            setFamily(e.target.value)
+            setSelected(null)
+          }}
+        >
+          <option>Tous</option>
+          <option>Instrument / dispositif</option>
+          <option>Méthode / savoir-faire</option>
+          <option>Problème public</option>
+        </select>
+      </section>
+
+      <section className="rail-section display-section">
+        <h3>Affichage</h3>
+
+        <label>
+          Taille des nœuds
+          <input
+            type="range"
+            min="0.8"
+            max="1.35"
+            step="0.05"
+            value={nodeSize}
+            onChange={e => setNodeSize(Number(e.target.value))}
+          />
+          <span>
+            <small>Petite</small>
+            <small>Grande</small>
+          </span>
+        </label>
+
+        <label>
+          Densité des liens
+          <input
+            type="range"
+            min="0.6"
+            max="1.8"
+            step="0.1"
+            value={linkDensity}
+            onChange={e => setLinkDensity(Number(e.target.value))}
+          />
+          <span>
+            <small>Faible</small>
+            <small>Élevée</small>
+          </span>
+        </label>
+      </section>
+
     </aside>
 
 <section className="graph-workspace">
