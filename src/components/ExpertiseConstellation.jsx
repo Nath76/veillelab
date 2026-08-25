@@ -6,16 +6,16 @@ import Icon from './Icon.jsx'
 // d'une ouverture à l'autre. Les nœuds d'un cluster occupent des orbites
 // déterministes autour de leur hub.
 export const EXPERTISE_CLUSTERS = [
-  {id:'cynotech', label:'Cynotechnie et savoirs opérationnels', color:'#77639B'},
-  {id:'cyber', label:'Cyber et influence', color:'#6D729C'},
-  {id:'mineurs', label:'Mineurs et statistiques', color:'#6E8DA6'},
-  {id:'territorial', label:'Analyse territoriale et sécurité locale', color:'#AE895F'},
-  {id:'innovation', label:'Innovation et technologies de sécurité', color:'#648879'},
-  {id:'metiers', label:'Métiers publics et récits professionnels', color:'#98708D'},
-  {id:'audit', label:'Audit et modernisation', color:'#A56F70'},
-  {id:'criminologie', label:'Recherche criminologique appliquée', color:'#7F8793'},
-  {id:'insecurite', label:'Insécurité et quartiers prioritaires', color:'#638C8C'},
-  {id:'radicalites', label:'Radicalités et terrorisme', color:'#9B8950'},
+  {id:'cynotech', label:'Cynotechnie et savoirs opérationnels', color:'#7C5CFA'},
+  {id:'cyber', label:'Cyber et influence', color:'#3B82F6'},
+  {id:'mineurs', label:'Mineurs et statistiques', color:'#06B6D4'},
+  {id:'territorial', label:'Analyse territoriale et sécurité locale', color:'#F59E0B'},
+  {id:'innovation', label:'Innovation et technologies de sécurité', color:'#14B86A'},
+  {id:'metiers', label:'Métiers publics et récits professionnels', color:'#EC4899'},
+  {id:'audit', label:'Audit et modernisation', color:'#EF4444'},
+  {id:'criminologie', label:'Recherche criminologique appliquée', color:'#64748B'},
+  {id:'insecurite', label:'Insécurité et quartiers prioritaires', color:'#0F766E'},
+  {id:'radicalites', label:'Radicalités et terrorisme', color:'#D97706'},
 ]
 
 const clusterMap=Object.fromEntries(EXPERTISE_CLUSTERS.map(x=>[x.id,x]))
@@ -136,7 +136,7 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
   const visibleEdges=useMemo(()=>edges
     .filter(e=>ids.has(e.source)&&ids.has(e.target))
     .sort((a,b)=>(b.count||0)-(a.count||0))
-    .slice(0,120),[edges,ids])
+    .slice(0,180),[edges,ids])
   const positions=useMemo(()=>selected?focusPositions(visible,selected.id):overviewPositions(visible),[visible,selected])
   const activeCluster=selected?expertiseCluster(selected):null
 
@@ -146,6 +146,21 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
       onPointerDown={e=>{drag.current={x:e.clientX,y:e.clientY,pan};e.currentTarget.setPointerCapture?.(e.pointerId)}}
       onPointerMove={e=>{if(drag.current&&e.buttons){setPan({x:drag.current.pan.x+(e.clientX-drag.current.x),y:drag.current.pan.y+(e.clientY-drag.current.y)})}}}
       onPointerUp={()=>drag.current=null} onPointerLeave={()=>drag.current=null}>
+      <defs>
+        <filter id="expertise-halo-blur" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="14"/>
+        </filter>
+        <filter id="expertise-halo-soft" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="7"/>
+        </filter>
+        {EXPERTISE_CLUSTERS.map(c=><radialGradient key={`gradient-${c.id}`} id={`expertise-halo-${c.id}`} cx="50%" cy="48%" r="52%">
+          <stop offset="0%" stopColor={c.color} stopOpacity="0.30"/>
+          <stop offset="32%" stopColor={c.color} stopOpacity="0.22"/>
+          <stop offset="58%" stopColor={c.color} stopOpacity="0.13"/>
+          <stop offset="82%" stopColor={c.color} stopOpacity="0.055"/>
+          <stop offset="100%" stopColor={c.color} stopOpacity="0"/>
+        </radialGradient>)}
+      </defs>
       <g transform={`translate(${pan.x} ${pan.y}) scale(${scale})`}>
 
         {!selected && EXPERTISE_CLUSTERS.map(c=>{
@@ -153,8 +168,8 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
           const r=clusterRadius[c.id]
           const label=clusterLabelPosition(c.id)
           return <g key={`halo-${c.id}`} className="controlled-cluster">
-            <circle className="cluster-halo halo-outer" cx={x} cy={y} r={r+18} fill={c.color}/>
-            <circle className="cluster-halo halo-inner" cx={x} cy={y} r={r} fill={c.color}/>
+            <ellipse className="cluster-halo halo-shadow" cx={x} cy={y+3} rx={r+34} ry={r+30} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-blur)"/>
+            <ellipse className="cluster-halo halo-core" cx={x} cy={y} rx={r+8} ry={r+4} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-soft)"/>
             <text className="controlled-cluster-name" x={label.x} y={label.y} textAnchor="middle">
               {wrap(c.label,27).map((line,i)=><tspan key={i} x={label.x} dy={i?18:0}>{line}</tspan>)}
             </text>
@@ -173,10 +188,11 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
           const a=positions[e.source],b=positions[e.target]; if(!a||!b)return null
           const active=selected&&(e.source===selected.id||e.target===selected.id)
           const sameCluster=a.cluster===b.cluster
+          const relationColor=active?'#2E4F8D':sameCluster?(clusterMap[a.cluster]?.color||'#8FA4C2'):'#9AA9BD'
           return <line key={`${e.source}-${e.target}`}
             className={`constellation-edge ${active?'active':''} ${sameCluster?'intra':'inter'}`}
             x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-            style={{opacity:selected?(active?.92:.16):sameCluster?Math.min(.72,.34*linkDensity):Math.min(.34,.16*linkDensity)}}/>
+            style={{stroke:relationColor,opacity:selected?(active?.98:.34):sameCluster?Math.min(.78,.52*linkDensity):Math.min(.48,.29*linkDensity)}}/>
         })}
 
         {visible.map(n=>{
