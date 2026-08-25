@@ -76,16 +76,26 @@ export default function ReflectionMap({result,onChange}){
  const panRef=useRef(null)
  const dragRef=useRef(null)
 
- useEffect(()=>{const next=result?.map||{};setMap(next);setLayout(buildLayout(next));setSelectedId('__central');setTimeout(()=>fit(),60)},[result])
+ useEffect(()=>{
+   const next=result?.map||{}
+   const nextLayout=buildLayout(next)
+   setMap(next);setLayout(nextLayout);setSelectedId('__central')
+   const raf=requestAnimationFrame(()=>fit(nextLayout))
+   return ()=>cancelAnimationFrame(raf)
+ },[result])
  useEffect(()=>{onChange?.(map)},[map,onChange])
  const byId=useMemo(()=>new Map(layout.map(n=>[n.id,n])),[layout])
  const edges=useMemo(()=>edgesFor(layout,map),[layout,map])
  const selected=byId.get(selectedId)
  const crossLinks=map?.cross_links||[]
+ const rebuildKeepingPositions=(nextMap,previous=layout)=>{
+   const old=new Map((previous||[]).map(n=>[n.id,n]))
+   return buildLayout(nextMap).map(n=>{const prev=old.get(n.id);return prev?{...n,x:prev.x,y:prev.y}:n})
+ }
 
- const fit=()=>{
-   const shell=shellRef.current;if(!shell||!layout.length)return
-   const xs=layout.map(n=>n.x),ys=layout.map(n=>n.y)
+ const fit=(nodesToFit=layout)=>{
+   const shell=shellRef.current;if(!shell||!Array.isArray(nodesToFit)||!nodesToFit.length)return
+   const xs=nodesToFit.map(n=>n.x),ys=nodesToFit.map(n=>n.y)
    const minX=Math.min(...xs)-180,maxX=Math.max(...xs)+180,minY=Math.min(...ys)-120,maxY=Math.max(...ys)+120
    const rect=shell.getBoundingClientRect();const scale=Math.min(.95,Math.max(.42,Math.min(rect.width/(maxX-minX),rect.height/(maxY-minY))))
    setView({scale,x:rect.width/2-((minX+maxX)/2)*scale,y:rect.height/2-((minY+maxY)/2)*scale})
@@ -100,30 +110,47 @@ export default function ReflectionMap({result,onChange}){
  const dragEnd=()=>{dragRef.current=null;window.removeEventListener('pointermove',dragMove)}
  const patchNode=(id,patch)=>{
    const current=byId.get(id)
-   const turnsUser=current?.kind==='documente'&&patch.label!==undefined&&patch.label!==current.label
-   const layoutPatch=turnsUser?{...patch,kind:'user',origin_provenances:current.provenances||[],provenances:[],chunk_ids:[]}:patch
+   if(!current)return
+   if(patch.branch_id!==undefined&&patch.branch_id!==current.branch_id){
+     const nextMap={...map,nodes:(map.nodes||[]).map(n=>n.id===id?{...n,...patch}:n)}
+     setMap(nextMap);setLayout(prev=>rebuildKeepingPositions(nextMap,prev));return
+   }
+   const labelEdited=patch.label!==undefined&&patch.label!==current.label
+   const turnsUser=labelEdited&&!['user','central','branch'].includes(current.kind)
+   const layoutPatch=turnsUser?{...patch,kind:'user',origin_kind:current.kind,origin_provenances:current.kind==='documente'?(current.provenances||[]):[],provenances:[],chunk_ids:[]}:patch
    setMap(m=>({...m,nodes:(m.nodes||[]).map(n=>{
      if(n.id!==id)return n
      const next={...n,...patch}
-     if(n.kind==='documente'&&patch.label!==undefined&&patch.label!==n.label){next.origin_provenances=n.provenances||[];next.kind='user';next.provenances=[];next.chunk_ids=[]}
+     if(patch.label!==undefined&&patch.label!==n.label&&!['user','central','branch'].includes(n.kind)){
+       next.origin_kind=n.kind
+       if(n.kind==='documente')next.origin_provenances=n.provenances||[]
+       next.kind='user';next.provenances=[];next.chunk_ids=[]
+     }
      return next
    })}))
    setLayout(arr=>arr.map(n=>n.id===id?{...n,...layoutPatch}:n))
  }
  const deleteNode=id=>{
    if(id.startsWith('__'))return
-   setMap(m=>({...m,
-     nodes:(m.nodes||[]).filter(n=>n.id!==id).map(n=>n.parent_id===id?{...n,parent_id:''}:n),
-     cross_links:(m.cross_links||[]).filter(l=>l.source!==id&&l.target!==id)
-   }))
-   setLayout(arr=>arr.filter(n=>n.id!==id));setSelectedId('__central')
+   const nextMap={...map,
+     nodes:(map.nodes||[]).filter(n=>n.id!==id).map(n=>n.parent_id===id?{...n,parent_id:''}:n),
+     cross_links:(map.cross_links||[]).filter(l=>l.source!==id&&l.target!==id)
+   }
+   setMap(nextMap);setLayout(prev=>rebuildKeepingPositions(nextMap,prev));setSelectedId('__central')
  }
  const addChild=()=>{
    const base=selected&&!selected.id.startsWith('__')?selected:null
    const branchId=base?.branch_id||(selected?.branch_id)||map.branches?.[0]?.id||'question';const id=uid()
    const node={id,branch_id:branchId,parent_id:base?.id||'',kind:'user',label:'Nouvelle piste',chunk_ids:[],provenances:[]}
-   setMap(m=>({...m,nodes:[...(m.nodes||[]),node]}))
-   const parent=base||byId.get(`__branch_${branchId}`)||byId.get('__central');setLayout(arr=>[...arr,{...node,x:(parent?.x||WORLD.cx)+210,y:(parent?.y||WORLD.cy)+80,w:236,h:86}]);setSelectedId(id)
+   const nextMap={...map,nodes:[...(map.nodes||[]),node]}
+   setMap(nextMap);setLayout(prev=>rebuildKeepingPositions(nextMap,prev));setSelectedId(id)
+ }
+ const addNextStep=label=>{
+   const clean=String(label||'').trim();if(!clean)return
+   const branchId=(map.branches||[]).some(b=>b.id==='prolongements')?'prolongements':(map.branches?.[0]?.id||'question')
+   const id=uid('ia');const node={id,branch_id:branchId,parent_id:'',kind:'suggestion',label:clean,chunk_ids:[],provenances:[]}
+   const nextMap={...map,nodes:[...(map.nodes||[]),node],next_steps:(map.next_steps||[]).filter(s=>s!==label)}
+   setMap(nextMap);setLayout(prev=>rebuildKeepingPositions(nextMap,prev));setSelectedId(id)
  }
  const addCrossLink=(source,target,label='')=>{
    if(!source||!target||source===target)return
@@ -139,7 +166,7 @@ export default function ReflectionMap({result,onChange}){
  return <div className="reflection-shell">
    <div className="reflection-toolbar">
      <div className="reflection-legend"><span><i className="dot documented"/>Documenté</span><span><i className="dot suggestion"/>Suggestion IA</span><span><i className="dot question"/>Question</span><span><i className="dot user"/>Votre ajout</span><span><i className="link-sample"/>Lien transversal</span></div>
-     <div className="reflection-tools"><button onClick={()=>zoom(.1)} title="Zoom avant"><Icon name="plus"/></button><button onClick={()=>zoom(-.1)} title="Zoom arrière"><Icon name="minus"/></button><button onClick={fit} title="Ajuster"><Icon name="target"/></button><button onClick={addChild} className="reflection-add"><Icon name="plus" size={17}/> Ajouter une idée</button></div>
+     <div className="reflection-tools"><button onClick={()=>zoom(.1)} title="Zoom avant"><Icon name="plus"/></button><button onClick={()=>zoom(-.1)} title="Zoom arrière"><Icon name="minus"/></button><button onClick={()=>fit()} title="Ajuster"><Icon name="target"/></button><button onClick={addChild} className="reflection-add"><Icon name="plus" size={17}/> Ajouter une idée</button></div>
    </div>
    <div className="reflection-canvas" ref={shellRef} onPointerDown={startPan} onPointerMove={movePan} onPointerUp={endPan} onPointerCancel={endPan} onWheel={wheel}>
      <div className="reflection-world" style={{width:WORLD.w,height:WORLD.h,transform:`translate(${view.x}px,${view.y}px) scale(${view.scale})`}}>
@@ -158,7 +185,7 @@ export default function ReflectionMap({result,onChange}){
      </div>
      <div className="reflection-hint">Glissez pour déplacer la carte · Molette pour zoomer · Déplacez les nœuds · Créez des liens transversaux depuis la fiche d’une idée</div>
    </div>
-   <Inspector node={selected} map={map} onPatch={patchNode} onDelete={deleteNode} onAdd={addChild} onAddLink={addCrossLink} onDeleteLink={deleteCrossLink}/>
+   <Inspector node={selected} map={map} onPatch={patchNode} onDelete={deleteNode} onAdd={addChild} onAddNextStep={addNextStep} onAddLink={addCrossLink} onDeleteLink={deleteCrossLink}/>
  </div>
 }
 
@@ -177,12 +204,12 @@ function MapNode({node,selected,linkCount,onSelect,onDrag}){
  </button>
 }
 
-function Inspector({node,map,onPatch,onDelete,onAdd,onAddLink,onDeleteLink}){
+function Inspector({node,map,onPatch,onDelete,onAdd,onAddNextStep,onAddLink,onDeleteLink}){
  const [targetId,setTargetId]=useState('')
  const [linkLabel,setLinkLabel]=useState('')
  useEffect(()=>{setTargetId('');setLinkLabel('')},[node?.id])
  if(!node)return <aside className="reflection-inspector"><div className="reflection-empty-inspector"><span>✦</span><strong>Sélectionnez un nœud</strong><p>Vous pourrez le modifier, le déplacer, ajouter une sous-idée, créer un lien transversal ou consulter ses sources.</p></div></aside>
- if(node.kind==='central')return <aside className="reflection-inspector"><span className="inspector-kicker">BESOIN CENTRAL</span><h3>{node.label}</h3><p className="inspector-help">La carte est un point de départ. Déplacez, supprimez, reliez ou complétez les pistes proposées.</p>{map.next_steps?.length>0&&<><h4>Prochaines directions possibles</h4><div className="next-step-list">{map.next_steps.map((s,i)=><button key={i}>{s}</button>)}</div></>}</aside>
+ if(node.kind==='central')return <aside className="reflection-inspector"><span className="inspector-kicker">BESOIN CENTRAL</span><h3>{node.label}</h3><p className="inspector-help">La carte est un point de départ. Déplacez, supprimez, reliez ou complétez les pistes proposées.</p>{map.next_steps?.length>0&&<><h4>Prochaines directions possibles</h4><div className="next-step-list">{map.next_steps.map((s,i)=><button key={i} onClick={()=>onAddNextStep?.(s)} title="Ajouter cette piste à la carte">{s}</button>)}</div></>}</aside>
  if(node.kind==='branch')return <aside className="reflection-inspector"><span className="inspector-kicker">BRANCHE</span><h3>{node.label}</h3><p className="inspector-help">Cette branche peut rester légère : la carte ne cherche pas à remplir toutes les catégories à tout prix.</p><button className="btn primary full" onClick={onAdd}><Icon name="plus" size={16}/>Ajouter une piste</button></aside>
  const kind=node.kind||'user';const sources=node.provenances||[];const origins=node.origin_provenances||[]
  const nodeLinks=(map.cross_links||[]).filter(l=>l.source===node.id||l.target===node.id)
@@ -213,6 +240,8 @@ function Inspector({node,map,onPatch,onDelete,onAdd,onAddLink,onDeleteLink}){
 
    {sources.length>0&&<SourceList title="Preuves documentaires" sources={sources}/>} 
    {!sources.length&&origins.length>0&&<SourceList title="Sources d’origine avant modification" sources={origins} muted/>}
+   {kind==='user'&&node.origin_kind==='suggestion'&&<div className="controlled-note"><span>+</span><p>Cette idée provient d’une suggestion IA que vous avez modifiée. Elle est désormais considérée comme votre contribution.</p></div>}
+   {kind==='user'&&node.origin_kind==='question'&&<div className="controlled-note question"><span>+</span><p>Cette idée provient d’une question IA que vous avez reformulée. Elle est désormais considérée comme votre contribution.</p></div>}
    {kind==='suggestion'&&<div className="controlled-note"><span>✦</span><p>Cette piste est proposée par l’IA pour stimuler la réflexion. Elle n’est pas présentée comme un fait documenté.</p></div>}
    {kind==='question'&&<div className="controlled-note question"><span>?</span><p>Cette question sert à ouvrir ou déplacer la réflexion. Elle n’est pas une conclusion du corpus.</p></div>}
  </aside>
