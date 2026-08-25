@@ -169,9 +169,16 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
   return <div className="constellation-shell model-b">
     <svg className="constellation-svg" viewBox="0 0 1180 760"
       onWheel={e=>{e.preventDefault();setScale(s=>Math.max(.58,Math.min(1.7,s+(e.deltaY<0?.08:-.08))))}}
-      onPointerDown={e=>{drag.current={x:e.clientX,y:e.clientY,pan};e.currentTarget.setPointerCapture?.(e.pointerId)}}
+      onPointerDown={e=>{
+        const interactive=e.target.closest?.('.constellation-node, .constellation-edge, .graph-tools')
+        if(interactive) return
+        drag.current={x:e.clientX,y:e.clientY,pan}
+        e.currentTarget.setPointerCapture?.(e.pointerId)
+      }}
       onPointerMove={e=>{if(drag.current&&e.buttons){setPan({x:drag.current.pan.x+(e.clientX-drag.current.x),y:drag.current.pan.y+(e.clientY-drag.current.y)})}}}
-      onPointerUp={()=>drag.current=null} onPointerLeave={()=>drag.current=null}>
+      onPointerUp={e=>{drag.current=null;try{e.currentTarget.releasePointerCapture?.(e.pointerId)}catch{}}}
+      onPointerCancel={()=>drag.current=null}
+      onPointerLeave={()=>drag.current=null}>
       <defs>
         <filter id="expertise-halo-blur" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="14"/>
@@ -196,7 +203,7 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
           return <g key={`halo-${c.id}`} className="controlled-cluster">
             <ellipse className="cluster-halo halo-shadow" cx={x} cy={y+3} rx={r+42} ry={r+38} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-blur)"/>
             <ellipse className="cluster-halo halo-core" cx={x} cy={y} rx={r+16} ry={r+12} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-soft)"/>
-            <text className="controlled-cluster-name" x={label.x} y={label.y} textAnchor="middle">
+            <text className="controlled-cluster-name pointer-pass" x={label.x} y={label.y} textAnchor="middle">
               {wrap(c.label,27).map((line,i)=><tspan key={i} x={label.x} dy={i?18:0}>{line}</tspan>)}
             </text>
           </g>
@@ -206,7 +213,7 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
           const a=positions[e.source],b=positions[e.target]; if(!a||!b) return null
           const clusterColor=clusterMap[e.cluster]?.color || '#9AA9BD'
           return <line key={`structure-${idx}-${e.source}-${e.target}`}
-            className={`constellation-edge structure-edge ${e.kind}`}
+            className={`constellation-edge structure-edge pointer-pass ${e.kind}`}
             x1={a.x} y1={a.y} x2={b.x} y2={b.y}
             style={{stroke:clusterColor,opacity:e.kind==='hub'?0.72:(e.kind==='ring'?0.46:0.32)}}/>
         })}
@@ -217,7 +224,7 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
           const sameCluster=a.cluster===b.cluster
           const relationColor=active?'#2E4F8D':sameCluster?(clusterMap[a.cluster]?.color||'#8FA4C2'):'#9AA9BD'
           return <line key={`${e.source}-${e.target}`}
-            className={`constellation-edge ${active?'active':''} ${sameCluster?'intra':'inter'}`}
+            className={`constellation-edge pointer-pass ${active?'active':''} ${sameCluster?'intra':'inter'}`}
             x1={a.x} y1={a.y} x2={b.x} y2={b.y}
             style={{stroke:relationColor,opacity:selected?(active?.98:.34):sameCluster?Math.min(.78,.52*linkDensity):Math.min(.48,.29*linkDensity)}}/>
         })}
@@ -232,12 +239,16 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
           const lx=p.x+(p.x<590?-18:18)
           const ly=p.y+(p.y<385?-18:28)
           return <g key={n.id} className={`constellation-node ${p.hub?'hub':''} ${isSel?'selected':''}`}
-            onClick={e=>{e.stopPropagation();onSelect(n)}}>
+            role="button" tabIndex={0}
+            onPointerDown={e=>e.stopPropagation()}
+            onClick={e=>{e.stopPropagation();onSelect(n)}}
+            onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onSelect(n)}}}>
             <title>{n.label}</title>
-            {p.hub&&!selected&&<circle className="hub-ring" cx={p.x} cy={p.y} r={r+9} fill="none" stroke={c.color}/>} 
-            {isSel&&<circle className="selection-halo" cx={p.x} cy={p.y} r={r+20} fill={c.color}/>} 
+            <circle className="node-hit-target" cx={p.x} cy={p.y} r={Math.max(r+10,18)} fill="transparent"/>
+            {p.hub&&!selected&&<circle className="hub-ring pointer-pass" cx={p.x} cy={p.y} r={r+9} fill="none" stroke={c.color}/>} 
+            {isSel&&<circle className="selection-halo pointer-pass" cx={p.x} cy={p.y} r={r+20} fill={c.color}/>} 
             <circle cx={p.x} cy={p.y} r={r} fill={c.color}/>
-            {selected&&<text x={lx} y={ly} textAnchor={p.x<590?'end':'start'} className={`node-label ${isSel?'selected-label':''}`}>
+            {selected&&<text x={lx} y={ly} textAnchor={p.x<590?'end':'start'} className={`node-label pointer-pass ${isSel?'selected-label':''}`}>
               {lines.map((line,i)=><tspan key={i} x={lx} dy={i?17:0}>{line}</tspan>)}
             </text>}
           </g>
