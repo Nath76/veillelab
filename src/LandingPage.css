@@ -1,396 +1,261 @@
-.qlab-landing {
-  position: relative;
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 20% 25%, rgba(50, 115, 170, 0.18), transparent 35%),
-    radial-gradient(circle at 55% 35%, rgba(120, 180, 220, 0.12), transparent 30%),
-    linear-gradient(90deg, #071c30 0%, #0b2841 45%, #092239 100%);
-  color: #f2f7fb;
-}
-
-.qlab-landing__overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(5,18,31,0.10) 0%, rgba(5,18,31,0.15) 48%, rgba(5,18,31,0.32) 100%);
-  pointer-events: none;
-  z-index: 1;
+.qlab-landing{
+  position:relative;
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:61% 39%;
+  overflow:hidden;
+  background:#061a2c;
+  color:#f4f8fb;
 }
 
 .qlab-landing__left,
-.qlab-landing__right {
-  position: relative;
-  z-index: 2;
+.qlab-landing__right{
+  position:relative;
+  z-index:2;
 }
 
-.qlab-landing__left {
-  min-height: 100vh;
-  display: flex;
-  align-items: stretch;
-  justify-content: stretch;
+.qlab-landing__left{
+  min-height:100vh;
+  overflow:hidden;
+  background:#071d30;
 }
 
-.qlab-landing__scene {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 100vh;
-}
-
-.qlab-landing__stars {
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(circle at 10% 12%, rgba(255,255,255,0.75) 0 1px, transparent 2px),
-    radial-gradient(circle at 25% 18%, rgba(255,255,255,0.6) 0 1px, transparent 2px),
-    radial-gradient(circle at 42% 9%, rgba(255,255,255,0.75) 0 1px, transparent 2px),
-    radial-gradient(circle at 58% 17%, rgba(255,255,255,0.5) 0 1px, transparent 2px),
-    radial-gradient(circle at 72% 11%, rgba(255,255,255,0.65) 0 1px, transparent 2px),
-    radial-gradient(circle at 83% 20%, rgba(255,255,255,0.45) 0 1px, transparent 2px);
-  opacity: 0.9;
-}
-
-.qlab-landing__sea {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 30%;
+.qlab-landing__scene{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
   background:
-    radial-gradient(circle at 65% 15%, rgba(180, 220, 255, 0.18), transparent 18%),
-    linear-gradient(180deg, rgba(20, 61, 92, 0.35) 0%, rgba(8, 35, 57, 0.9) 65%, rgba(4, 20, 35, 1) 100%);
+    linear-gradient(90deg,rgba(4,20,35,.02) 0%,rgba(4,20,35,.02) 68%,rgba(4,20,35,.42) 100%),
+    url('./quirites-lab-lighthouse.png') left center/cover no-repeat;
 }
 
-.qlab-landing__sea::before,
-.qlab-landing__sea::after {
-  content: "";
-  position: absolute;
-  left: 8%;
-  right: 6%;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(90, 176, 214, 0.35), transparent);
+/* Le visuel validé contient déjà phare, mer et côte */
+.qlab-landing__stars,
+.qlab-landing__sea,
+.qlab-landing__shore,
+.qlab-landing__lighthouse{
+  display:none!important;
 }
 
-.qlab-landing__sea::before {
-  top: 28%;
+/* Faisceau animé, volontairement bas vers l'horizon et l'eau */
+.qlab-landing__beam-wrap{
+  position:absolute;
+  left:12.6%;
+  top:28.8%;
+  width:83%;
+  height:40%;
+  transform-origin:0 50%;
+  pointer-events:none;
+  z-index:4;
+  animation:qlab-lighthouse-sweep 7.5s ease-in-out infinite alternate;
 }
 
-.qlab-landing__sea::after {
-  top: 42%;
+.qlab-landing__beam-core{
+  position:absolute;
+  left:0;
+  top:42%;
+  width:100%;
+  height:28%;
+  clip-path:polygon(0 47%,100% 18%,100% 88%);
+  background:linear-gradient(90deg,rgba(236,248,255,.22) 0%,rgba(203,235,251,.14) 32%,rgba(172,218,242,.07) 66%,rgba(172,218,242,0) 100%);
+  filter:blur(1px);
+  opacity:.72;
 }
 
-.qlab-landing__shore {
-  position: absolute;
-  left: 0;
-  bottom: 19%;
-  width: 42%;
-  height: 18%;
-  background: linear-gradient(180deg, rgba(8, 26, 40, 0.2) 0%, rgba(6, 23, 36, 0.92) 100%);
-  clip-path: polygon(0 100%, 0 72%, 11% 66%, 18% 60%, 27% 49%, 35% 34%, 48% 18%, 63% 10%, 77% 18%, 85% 35%, 100% 100%);
+.qlab-landing__beam-glow{
+  position:absolute;
+  left:-1%;
+  top:36%;
+  width:102%;
+  height:42%;
+  clip-path:polygon(0 49%,100% 9%,100% 96%);
+  background:linear-gradient(90deg,rgba(223,244,255,.12) 0%,rgba(184,225,247,.08) 40%,rgba(150,208,238,.01) 100%);
+  filter:blur(16px);
+  opacity:.7;
 }
 
-.qlab-landing__lighthouse {
-  position: absolute;
-  left: 16%;
-  bottom: 22%;
-  width: 76px;
-  height: 290px;
+@keyframes qlab-lighthouse-sweep{
+  0%{transform:rotate(.5deg);opacity:.68}
+  50%{opacity:.88}
+  100%{transform:rotate(4.8deg);opacity:.68}
 }
 
-.qlab-landing__lighthouse-top {
-  position: absolute;
-  top: 0;
-  left: 14px;
-  width: 48px;
-  height: 42px;
-  border-radius: 12px 12px 8px 8px;
-  background: linear-gradient(180deg, #f5f9fc 0%, #c6d3dc 100%);
-  box-shadow: 0 0 12px rgba(255,255,255,0.25);
+.qlab-landing__network{
+  position:absolute;
+  left:31%;
+  top:25%;
+  width:58%;
+  height:39%;
+  z-index:5;
+  pointer-events:none;
+  opacity:.48;
 }
 
-.qlab-landing__lighthouse-top::before {
-  content: "";
-  position: absolute;
-  top: -16px;
-  left: 4px;
-  width: 40px;
-  height: 18px;
-  background: #d9e5ec;
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-.qlab-landing__lighthouse-body {
-  position: absolute;
-  top: 34px;
-  left: 6px;
-  width: 64px;
-  height: 250px;
-  background: linear-gradient(180deg, #d7e1e7 0%, #a8b7c1 100%);
-  clip-path: polygon(24% 0, 76% 0, 92% 100%, 8% 100%);
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.08);
-}
-
-.qlab-landing__lighthouse-light {
-  position: absolute;
-  top: 16px;
-  left: 29px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(219,241,255,0.95) 45%, rgba(126,196,255,0.45) 75%, transparent 100%);
-  box-shadow:
-    0 0 18px rgba(180, 226, 255, 0.85),
-    0 0 40px rgba(135, 207, 255, 0.5),
-    0 0 75px rgba(135, 207, 255, 0.22);
-  animation: qlab-pulse 3.6s ease-in-out infinite;
-  z-index: 5;
-}
-
-.qlab-landing__beam-wrap {
-  position: absolute;
-  left: calc(16% + 38px);
-  top: calc(22% + 34px);
-  width: 640px;
-  height: 340px;
-  transform-origin: 0 50%;
-  animation: qlab-sweep 6s ease-in-out infinite alternate;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.qlab-landing__beam-core {
-  position: absolute;
-  left: 0;
-  top: 45%;
-  width: 100%;
-  height: 34%;
-  background: linear-gradient(
-    90deg,
-    rgba(210, 239, 255, 0.55) 0%,
-    rgba(190, 231, 255, 0.26) 32%,
-    rgba(162, 214, 244, 0.14) 66%,
-    rgba(162, 214, 244, 0.02) 100%
-  );
-  clip-path: polygon(0 48%, 100% 0, 100% 100%);
-  filter: blur(0.3px);
-}
-
-.qlab-landing__beam-glow {
-  position: absolute;
-  left: -10px;
-  top: 40%;
-  width: 102%;
-  height: 42%;
-  background: linear-gradient(
-    90deg,
-    rgba(210, 239, 255, 0.18) 0%,
-    rgba(185, 227, 250, 0.12) 45%,
-    rgba(185, 227, 250, 0.03) 100%
-  );
-  clip-path: polygon(0 50%, 100% 0, 100% 100%);
-  filter: blur(12px);
-}
-
-.qlab-landing__network {
-  position: absolute;
-  left: 36%;
-  top: 18%;
-  width: 42%;
-  height: 34%;
-  pointer-events: none;
-}
-
-.qlab-landing__network::before {
-  content: "";
-  position: absolute;
-  inset: 0;
+.qlab-landing__network::before{
+  content:"";
+  position:absolute;
+  inset:0;
   background:
-    linear-gradient(25deg, transparent 48%, rgba(180, 220, 255, 0.12) 49%, rgba(180, 220, 255, 0.12) 51%, transparent 52%),
-    linear-gradient(155deg, transparent 48%, rgba(180, 220, 255, 0.08) 49%, rgba(180, 220, 255, 0.08) 51%, transparent 52%);
-  opacity: 0.65;
+    linear-gradient(24deg,transparent 48%,rgba(186,224,244,.10) 49%,rgba(186,224,244,.10) 50%,transparent 51%),
+    linear-gradient(152deg,transparent 48%,rgba(186,224,244,.07) 49%,rgba(186,224,244,.07) 50%,transparent 51%);
+  opacity:.6;
 }
 
-.node {
-  position: absolute;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(233, 244, 252, 0.92);
-  text-shadow: 0 0 8px rgba(0,0,0,0.35);
+.qlab-landing .node{
+  position:absolute;
+  font-size:10px;
+  font-weight:500;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:rgba(234,246,252,.76);
+  text-shadow:0 1px 5px rgba(0,0,0,.72);
 }
 
-.node::before {
-  content: "";
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-right: 8px;
-  border-radius: 50%;
-  background: rgba(215, 240, 255, 0.85);
-  box-shadow: 0 0 8px rgba(215, 240, 255, 0.45);
-  vertical-align: middle;
+.qlab-landing .node::before{
+  content:"";
+  display:inline-block;
+  width:4px;
+  height:4px;
+  margin-right:7px;
+  border-radius:50%;
+  background:rgba(172,226,246,.9);
+  box-shadow:0 0 7px rgba(158,224,246,.55);
+  vertical-align:middle;
 }
 
-.node-1 { left: 2%; top: 18%; }
-.node-2 { left: 38%; top: 8%; }
-.node-3 { left: 58%; top: 22%; }
-.node-4 { left: 14%; top: 42%; }
-.node-5 { left: 52%; top: 56%; }
-.node-6 { left: 74%; top: 72%; }
+.qlab-landing .node-1{left:7%;top:10%}
+.qlab-landing .node-2{left:46%;top:1%}
+.qlab-landing .node-3{left:67%;top:28%}
+.qlab-landing .node-4{left:18%;top:35%}
+.qlab-landing .node-5{left:47%;top:57%}
+.qlab-landing .node-6{left:76%;top:74%}
 
-.qlab-landing__right {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 70px 72px 70px 36px;
+.qlab-landing__overlay{
+  position:absolute;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent 0%,transparent 53%,rgba(5,21,36,.18) 61%,rgba(5,21,36,.46) 100%);
 }
 
-.qlab-landing__content {
-  max-width: 520px;
+.qlab-landing__right{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  padding:64px 6.5vw 64px 4.6vw;
+  background:
+    radial-gradient(circle at 0 48%,rgba(25,72,102,.18),transparent 45%),
+    linear-gradient(180deg,#061a2c 0%,#071d30 100%);
 }
 
-.qlab-landing__brand {
-  font-size: clamp(44px, 5vw, 68px);
-  line-height: 0.98;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  margin-bottom: 28px;
-  color: #f2f7fb;
+.qlab-landing__content{
+  width:100%;
+  max-width:560px;
 }
 
-.qlab-landing__lead {
-  font-size: 20px;
-  line-height: 1.55;
-  color: rgba(243, 248, 251, 0.96);
-  margin: 0 0 24px 0;
+.qlab-landing__brand{
+  margin:0 0 34px 0;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(54px,5.3vw,84px);
+  font-weight:400;
+  line-height:.96;
+  letter-spacing:-.045em;
+  color:#f4f6f8;
 }
 
-.qlab-landing__text {
-  font-size: 18px;
-  line-height: 1.7;
-  color: rgba(224, 236, 244, 0.92);
-  margin: 0 0 26px 0;
+.qlab-landing__brand::after{
+  content:"";
+  display:block;
+  width:48px;
+  height:3px;
+  margin-top:26px;
+  border-radius:999px;
+  background:#35a8c7;
 }
 
-.qlab-landing__baseline {
-  margin-bottom: 28px;
-  font-size: 13px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: #73d0ef;
+.qlab-landing__lead{
+  margin:0 0 26px 0;
+  font-size:clamp(16px,1.2vw,20px);
+  line-height:1.58;
+  color:rgba(238,245,249,.92);
+}
+.qlab-landing__lead strong{font-weight:400}
+
+.qlab-landing__text{
+  margin:0 0 31px 0;
+  font-size:clamp(15px,1.12vw,18px);
+  line-height:1.68;
+  color:rgba(219,232,240,.88);
+}
+.qlab-landing__text strong{
+  display:inline-block;
+  margin-bottom:11px;
+  font-weight:700;
+  color:#f5f8fa;
 }
 
-.qlab-landing__button {
-  appearance: none;
-  border: none;
-  border-radius: 999px;
-  padding: 16px 28px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  background: linear-gradient(180deg, #ffffff 0%, #eaf3f8 100%);
-  color: #0b2a42;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+.qlab-landing__baseline{
+  margin:6px 0 29px 0;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.27em;
+  text-transform:uppercase;
+  color:#4db8d7;
 }
 
-.qlab-landing__button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 34px rgba(0,0,0,0.24);
+.qlab-landing__button{
+  appearance:none;
+  min-height:56px;
+  padding:0 28px;
+  border:1px solid rgba(116,211,233,.30);
+  border-radius:999px;
+  background:linear-gradient(135deg,#16738f 0%,#238da8 100%);
+  color:#fff;
+  font:inherit;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 10px 28px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.12);
+  transition:transform 180ms ease,background 180ms ease,box-shadow 180ms ease;
 }
 
-.qlab-landing__button:active {
-  transform: translateY(0);
+.qlab-landing__button::before{
+  content:"↗";
+  display:inline-grid;
+  place-items:center;
+  width:29px;
+  height:29px;
+  margin-right:12px;
+  border:1px solid rgba(255,255,255,.72);
+  border-radius:50%;
+  font-size:17px;
 }
 
-@keyframes qlab-sweep {
-  0% {
-    transform: rotate(6deg);
-  }
-  100% {
-    transform: rotate(-6deg);
-  }
+.qlab-landing__button:hover{
+  transform:translateY(-2px);
+  background:linear-gradient(135deg,#19809d 0%,#27a0bd 100%);
+  box-shadow:0 15px 36px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.15);
 }
 
-@keyframes qlab-pulse {
-  0%, 100% {
-    opacity: 0.95;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.08);
-  }
+@media(max-width:1100px){
+  .qlab-landing{grid-template-columns:56% 44%}
+  .qlab-landing__right{padding:48px 36px}
+  .qlab-landing__brand{font-size:56px}
 }
 
-@media (max-width: 1100px) {
-  .qlab-landing {
-    grid-template-columns: 1fr;
-  }
-
-  .qlab-landing__left {
-    min-height: 52vh;
-  }
-
-  .qlab-landing__scene {
-    min-height: 52vh;
-  }
-
-  .qlab-landing__right {
-    min-height: auto;
-    padding: 28px 22px 48px;
-  }
-
-  .qlab-landing__content {
-    max-width: 100%;
-  }
-
-  .qlab-landing__beam-wrap {
-    width: 420px;
-    height: 220px;
-  }
-
-  .qlab-landing__lighthouse {
-    left: 10%;
-    bottom: 18%;
-    transform: scale(0.82);
-    transform-origin: bottom left;
-  }
-
-  .qlab-landing__network {
-    left: 30%;
-    width: 54%;
-  }
+@media(max-width:780px){
+  .qlab-landing{display:block}
+  .qlab-landing__left{min-height:46vh}
+  .qlab-landing__scene{min-height:46vh;background-position:20% center}
+  .qlab-landing__right{min-height:auto;padding:38px 25px 50px}
+  .qlab-landing__brand{font-size:50px;margin-bottom:26px}
+  .qlab-landing__lead{font-size:17px}
+  .qlab-landing__text{font-size:16px}
+  .qlab-landing__baseline{font-size:11px;letter-spacing:.18em}
+  .qlab-landing .node{font-size:8px}
 }
 
-@media (max-width: 680px) {
-  .qlab-landing__brand {
-    font-size: 40px;
-  }
-
-  .qlab-landing__lead {
-    font-size: 17px;
-  }
-
-  .qlab-landing__text {
-    font-size: 16px;
-  }
-
-  .qlab-landing__baseline {
-    letter-spacing: 0.18em;
-    font-size: 12px;
-  }
-
-  .qlab-landing__beam-wrap {
-    width: 300px;
-    height: 160px;
-  }
-
-  .node {
-    font-size: 10px;
-  }
+@media(prefers-reduced-motion:reduce){
+  .qlab-landing__beam-wrap{animation:none}
+  .qlab-landing__button{transition:none}
 }
