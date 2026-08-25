@@ -74,12 +74,6 @@ function wrap(text,max=24){
 
 function scoreNode(n){return (n.degree||0)+(n.publication_count||0)}
 
-function stableHash(value){
-  const s=String(value||''); let h=2166136261
-  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
-  return h>>>0
-}
-
 function overviewPositions(nodes){
   const by={}; nodes.forEach(n=>(by[expertiseCluster(n)]??=[]).push(n))
   const out={}
@@ -88,16 +82,15 @@ function overviewPositions(nodes){
     const sorted=[...list].sort((a,b)=>scoreNode(b)-scoreNode(a)||String(a.id).localeCompare(String(b.id)))
     sorted.forEach((n,i)=>{
       if(i===0){out[n.id]={x:cx,y:cy,hub:true,cluster};return}
-      // Position organique mais déterministe : même donnée = même place à chaque ouverture.
-      const h=stableHash(`${cluster}-${n.id}`)
-      const golden=2.399963229728653
-      const angle=-Math.PI/2 + i*golden + ((h%1000)/1000-.5)*.42
-      const band=i<=7?1:2
-      const base=band===1?50:82
-      const jitter=((h>>>8)%23)-11
-      const r=base+jitter
-      const squash=.78 + (((h>>>16)%15)/100)
-      out[n.id]={x:cx+Math.cos(angle)*r,y:cy+Math.sin(angle)*r*squash,hub:false,cluster}
+      // Deux couronnes fixes. Le nombre de points de chaque couronne ne dépend
+      // que du rang du nœud, ce qui stabilise la perception du cluster.
+      const ring=i<=7?1:2
+      const ringIndex=ring===1?i-1:i-8
+      const ringCount=ring===1?7:Math.max(1,Math.min(10,sorted.length-8))
+      const phase=(cluster.length%7)*0.11
+      const angle=-Math.PI/2+phase+(Math.PI*2*ringIndex/ringCount)
+      const r=ring===1?58:90
+      out[n.id]={x:cx+Math.cos(angle)*r,y:cy+Math.sin(angle)*r,hub:false,cluster}
     })
   })
   return out
@@ -170,10 +163,7 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
     .slice(0,220),[edges,ids])
   const positions=useMemo(()=>selected?focusPositions(visible,selected.id):overviewPositions(visible),[visible,selected])
   const activeCluster=selected?expertiseCluster(selected):null
-  // Les halos suivent strictement le périmètre actuellement filtré.
-  // Si une entité ne mobilise qu'une constellation, un seul halo est affiché ;
-  // si elle en mobilise plusieurs, seuls ces halos restent visibles.
-  const relevantClusterIds=useMemo(()=>new Set(nodes.map(expertiseCluster)),[nodes])
+  const visibleClusters=useMemo(()=>new Set(visible.map(expertiseCluster)),[visible])
   const structureEdges=useMemo(()=>selected?[]:overviewStructureEdges(visible,positions),[selected,visible,positions])
 
   return <div className="constellation-shell model-b">
@@ -190,33 +180,25 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
           <feGaussianBlur stdDeviation="7"/>
         </filter>
         {EXPERTISE_CLUSTERS.map(c=><radialGradient key={`gradient-${c.id}`} id={`expertise-halo-${c.id}`} cx="50%" cy="48%" r="52%">
-          <stop offset="0%" stopColor={c.color} stopOpacity="0.38"/>
-          <stop offset="28%" stopColor={c.color} stopOpacity="0.29"/>
-          <stop offset="56%" stopColor={c.color} stopOpacity="0.17"/>
-          <stop offset="84%" stopColor={c.color} stopOpacity="0.075"/>
+          <stop offset="0%" stopColor={c.color} stopOpacity="0.44"/>
+          <stop offset="28%" stopColor={c.color} stopOpacity="0.34"/>
+          <stop offset="56%" stopColor={c.color} stopOpacity="0.20"/>
+          <stop offset="84%" stopColor={c.color} stopOpacity="0.09"/>
           <stop offset="100%" stopColor={c.color} stopOpacity="0"/>
         </radialGradient>)}
       </defs>
       <g transform={`translate(${pan.x} ${pan.y}) scale(${scale})`}>
 
-        {!selected && EXPERTISE_CLUSTERS.filter(c=>relevantClusterIds.has(c.id)).map(c=>{
+        {!selected && EXPERTISE_CLUSTERS.filter(c=>visibleClusters.has(c.id)).map(c=>{
           const [x,y]=centers[c.id]
           const r=clusterRadius[c.id]
           const label=clusterLabelPosition(c.id)
           return <g key={`halo-${c.id}`} className="controlled-cluster">
-            <ellipse className="cluster-halo halo-shadow" cx={x} cy={y+3} rx={r+38} ry={r+34} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-blur)"/>
-            <ellipse className="cluster-halo halo-core" cx={x} cy={y} rx={r+12} ry={r+9} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-soft)"/>
+            <ellipse className="cluster-halo halo-shadow" cx={x} cy={y+3} rx={r+42} ry={r+38} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-blur)"/>
+            <ellipse className="cluster-halo halo-core" cx={x} cy={y} rx={r+16} ry={r+12} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-soft)"/>
             <text className="controlled-cluster-name" x={label.x} y={label.y} textAnchor="middle">
               {wrap(c.label,27).map((line,i)=><tspan key={i} x={label.x} dy={i?18:0}>{line}</tspan>)}
             </text>
-          </g>
-        })}
-
-        {selected && EXPERTISE_CLUSTERS.filter(c=>c.id!==activeCluster).map(c=>{
-          const [x,y]=centers[c.id]
-          return <g key={`ghost-${c.id}`} className="ghost-cluster" transform={`translate(${x},${y})`}>
-            <circle r="20" fill={c.color}/>
-            {[0,1,2,3,4,5].map(i=><circle key={i} cx={Math.cos(i*Math.PI/3)*43} cy={Math.sin(i*Math.PI/3)*43} r="7" fill={c.color}/>) }
           </g>
         })}
 
