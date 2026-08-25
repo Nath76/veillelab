@@ -26,9 +26,9 @@ export default function Expertises({data}){
   const filtered=useMemo(()=>data.expertise_nodes.filter(n=>(entity==='Toutes les entités'||(n.entities||[]).includes(entity))&&(family==='Tous'||n.family===family)),[data,entity,family])
   const found=useMemo(()=>{const q=normalize(search);return q?filtered.filter(n=>normalize(`${n.label} ${n.definition} ${(n.entities||[]).join(' ')}`).includes(q)).slice(0,8):[]},[search,filtered])
   const visibleEdges=useMemo(()=>{const ids=new Set(filtered.map(n=>n.id));return data.expertise_edges.filter(e=>ids.has(e.source)&&ids.has(e.target))},[filtered,data])
-  const overviewNodes=useMemo(()=>selectOverviewExpertises(filtered,60),[filtered])
+  const overviewNodes=useMemo(()=>selectOverviewExpertises(filtered,80),[filtered])
   const overviewIds=useMemo(()=>new Set(overviewNodes.map(n=>n.id)),[overviewNodes])
-  const overviewLinks=useMemo(()=>visibleEdges.filter(e=>overviewIds.has(e.source)&&overviewIds.has(e.target)).slice(0,120),[visibleEdges,overviewIds])
+  const overviewLinks=useMemo(()=>visibleEdges.filter(e=>overviewIds.has(e.source)&&overviewIds.has(e.target)).slice(0,220),[visibleEdges,overviewIds])
 
   const publicationCount=useMemo(()=>new Set(data.expertise_nodes.flatMap(n=>(n.publications||[]).map(p=>p.publication_id))).size,[data])
   const domainCount=useMemo(()=>new Set(data.expertise_nodes.flatMap(n=>n.domains||[])).size,[data])
@@ -36,7 +36,7 @@ export default function Expertises({data}){
 
   const clear=()=>{setSelected(null);setSearch('');setEntity('Toutes les entités');setFamily('Tous');setResetToken(x=>x+1)}
 
-  return <main className={`expertise-guided-v02 ${selected?'has-drawer':''}`}>
+  return <main className="expertise-guided-v02 has-drawer">
     <aside className="expertise-guide-column">
       <section className="expertise-intro-card">
         <span className="expertise-kicker">EXPERTISES MINISTÉRIELLES</span>
@@ -78,7 +78,7 @@ export default function Expertises({data}){
 
       <div className="expertise-map-status">
         <div><strong>{overviewNodes.length}</strong><span>nœuds affichés</span></div>
-        <div><strong>{Math.min(120,overviewLinks.length)}</strong><span>liens visibles</span></div>
+        <div><strong>{Math.min(220,overviewLinks.length)}</strong><span>liens visibles</span></div>
         <p>{selected?'Vue locale : les expertises associées au nœud sélectionné sont mises en avant.':'Vue globale : seuls les noms des constellations sont affichés. Cliquez sur un nœud pour entrer dans le détail.'}</p>
       </div>
 
@@ -87,15 +87,28 @@ export default function Expertises({data}){
       </div>
     </section>
 
-    {selected&&<aside className="detail-drawer expertise-detail-drawer">
-      <button className="drawer-close" onClick={()=>setSelected(null)}><Icon name="close"/></button>
-      <div className="drawer-type"><i style={{background:familyColor[selected.family]||'#AE895F'}}></i>{selected.family}</div>
-      <h2>{selected.label}</h2>
-      <p className="drawer-definition">{selected.definition}</p>
-      <h4>Entité(s)</h4><div className="chips">{(selected.entities||[]).map(x=><span className="chip" key={x}>{x}</span>)}</div>
-      <h4>Publications associées</h4><div className="publication-mini-list">{selected.publications.slice(0,4).map(p=><article key={p.publication_id}>{p.image_path?<img src={`.${p.image_path}`} alt=""/>:<div className="mini-placeholder">{p.publication_id}</div>}<div><strong>{sentenceCase(p.titre)}</strong><small>{p.organisme} · {p.annee}</small></div></article>)}</div>
-      <Accordion title="Expertises directement associées"><div className="chips">{selected.associated.slice(0,12).map(a=>{const n=data.expertise_nodes.find(x=>x.id===a.id);return n?<button className="chip clickable" key={a.id} onClick={()=>setSelected(n)}>{n.label}</button>:null})}</div></Accordion>
-      <Accordion title="Domaines mobilisés"><div className="chips">{(selected.domains||[]).map(x=><span className="chip" key={x}>{x}</span>)}</div></Accordion>
-    </aside>}
+    <aside className="detail-drawer expertise-detail-drawer">
+      {selected?<>
+        <button className="drawer-close" onClick={()=>setSelected(null)}><Icon name="close"/></button>
+        <div className="drawer-type"><i style={{background:familyColor[selected.family]||'#AE895F'}}></i>{selected.family}</div>
+        <h2>{selected.label}</h2>
+        <p className="drawer-definition">{selected.definition}</p>
+        <h4>Entité(s)</h4><div className="chips">{(selected.entities||[]).map(x=><span className="chip" key={x}>{x}</span>)}</div>
+        <h4>Publications associées</h4><div className="publication-mini-list">{selected.publications.slice(0,4).map(p=><article key={p.publication_id}>{p.image_path?<img src={`.${p.image_path}`} alt=""/>:<div className="mini-placeholder">{p.publication_id}</div>}<div><strong>{sentenceCase(p.titre)}</strong><small>{p.organisme} · {p.annee}</small></div></article>)}</div>
+        <Accordion title="Expertises directement associées"><div className="chips">{selected.associated.slice(0,12).map(a=>{const n=data.expertise_nodes.find(x=>x.id===a.id);return n?<button className="chip clickable" key={a.id} onClick={()=>setSelected(n)}>{n.label}</button>:null})}</div></Accordion>
+        <Accordion title="Domaines mobilisés"><div className="chips">{(selected.domains||[]).map(x=><span className="chip" key={x}>{x}</span>)}</div></Accordion>
+      </>:<>
+        <div className="drawer-placeholder">
+          <span className="expertise-kicker">CONSULTATION</span>
+          <h2>Sélectionnez une expertise</h2>
+          <p className="drawer-definition">Cliquez sur un cluster ou sur un nœud pour afficher sa fiche détaillée, les entités qui la mobilisent, ses publications associées et ses domaines d’usage.</p>
+          <div className="drawer-empty-state">
+            <div className="empty-step"><strong>1</strong><span>Commencez par une constellation dans la carte centrale.</span></div>
+            <div className="empty-step"><strong>2</strong><span>Zoomez ou cliquez sur un nœud pour faire apparaître ses micro-expertises.</span></div>
+            <div className="empty-step"><strong>3</strong><span>Consultez ici la fiche complète de l’expertise sélectionnée.</span></div>
+          </div>
+        </div>
+      </>}
+    </aside>
   </main>
 }
