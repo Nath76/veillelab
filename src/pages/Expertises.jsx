@@ -111,7 +111,7 @@ function ExpertiseIntroBanner() {
       </div>
 
       <div className="expertise-transition-art" aria-hidden="true">
-        <img src="./images/expertises-intro-sobre.png" alt="" />
+        <img src={`${import.meta.env.BASE_URL}images/expertises-intro-sobre.png`} alt="" />
       </div>
     </section>
   )
