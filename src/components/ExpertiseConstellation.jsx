@@ -40,10 +40,10 @@ export function selectOverviewExpertises(nodes,max=60){
   const groups={}; nodes.forEach(n=>(groups[expertiseCluster(n)]??=[]).push(n))
   const chosen=[]; const seen=new Set()
   EXPERTISE_CLUSTERS.forEach(c=>{
-    ;(groups[c.id]||[]).sort((a,b)=>score(b)-score(a)).slice(0,3).forEach(n=>{if(!seen.has(n.id)){seen.add(n.id);chosen.push(n)}})
+    ;(groups[c.id]||[]).sort((a,b)=>score(b)-score(a)).slice(0,8).forEach(n=>{if(!seen.has(n.id)){seen.add(n.id);chosen.push(n)}})
   })
   ;[...nodes].sort((a,b)=>score(b)-score(a)).forEach(n=>{if(chosen.length<max&&!seen.has(n.id)){seen.add(n.id);chosen.push(n)}})
-  return chosen.slice(0,max)
+  return chosen.slice(0,Math.max(max,80))
 }
 
 // Géographie stable du modèle B, pensée pour le viewBox 1180 × 760.
@@ -119,6 +119,30 @@ function clusterLabelPosition(id){
   return {x,y:y-r-23}
 }
 
+function overviewStructureEdges(visible,positions){
+  const by={}
+  visible.forEach(n=>{const c=expertiseCluster(n);(by[c]??=[]).push(n)})
+  const out=[]
+  Object.entries(by).forEach(([cluster,list])=>{
+    const sorted=[...list].sort((a,b)=>scoreNode(b)-scoreNode(a)||String(a.id).localeCompare(String(b.id)))
+    if(!sorted.length) return
+    const hub=sorted[0]
+    const satellites=sorted.slice(1,8)
+    satellites.forEach((n,idx)=>{
+      out.push({source:hub.id,target:n.id,cluster,kind:'hub'})
+      if(satellites.length>2){
+        const next=satellites[(idx+1)%satellites.length]
+        out.push({source:n.id,target:next.id,cluster,kind:'ring'})
+      }
+      if(satellites.length>4){
+        const far=satellites[(idx+3)%satellites.length]
+        if(n.id<far.id) out.push({source:n.id,target:far.id,cluster,kind:'mesh'})
+      }
+    })
+  })
+  return out
+}
+
 export default function ExpertiseConstellation({nodes,edges,selected,onSelect,nodeSize=1,linkDensity=1,resetToken=0,fitToken=0}){
   const [scale,setScale]=useState(1),[pan,setPan]=useState({x:0,y:0})
   const drag=useRef(null)
@@ -129,16 +153,17 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
       const ids=new Set([selected.id,...(selected.associated||[]).slice(0,14).map(a=>a.id)])
       return nodes.filter(n=>ids.has(n.id))
     }
-    return selectOverviewExpertises(nodes,60)
+    return selectOverviewExpertises(nodes,80)
   },[nodes,selected])
 
   const ids=useMemo(()=>new Set(visible.map(n=>n.id)),[visible])
   const visibleEdges=useMemo(()=>edges
     .filter(e=>ids.has(e.source)&&ids.has(e.target))
     .sort((a,b)=>(b.count||0)-(a.count||0))
-    .slice(0,180),[edges,ids])
+    .slice(0,220),[edges,ids])
   const positions=useMemo(()=>selected?focusPositions(visible,selected.id):overviewPositions(visible),[visible,selected])
   const activeCluster=selected?expertiseCluster(selected):null
+  const structureEdges=useMemo(()=>selected?[]:overviewStructureEdges(visible,positions),[selected,visible,positions])
 
   return <div className="constellation-shell model-b">
     <svg className="constellation-svg" viewBox="0 0 1180 760"
@@ -154,10 +179,10 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
           <feGaussianBlur stdDeviation="7"/>
         </filter>
         {EXPERTISE_CLUSTERS.map(c=><radialGradient key={`gradient-${c.id}`} id={`expertise-halo-${c.id}`} cx="50%" cy="48%" r="52%">
-          <stop offset="0%" stopColor={c.color} stopOpacity="0.30"/>
-          <stop offset="32%" stopColor={c.color} stopOpacity="0.22"/>
-          <stop offset="58%" stopColor={c.color} stopOpacity="0.13"/>
-          <stop offset="82%" stopColor={c.color} stopOpacity="0.055"/>
+          <stop offset="0%" stopColor={c.color} stopOpacity="0.44"/>
+          <stop offset="28%" stopColor={c.color} stopOpacity="0.34"/>
+          <stop offset="56%" stopColor={c.color} stopOpacity="0.20"/>
+          <stop offset="84%" stopColor={c.color} stopOpacity="0.09"/>
           <stop offset="100%" stopColor={c.color} stopOpacity="0"/>
         </radialGradient>)}
       </defs>
@@ -168,8 +193,8 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
           const r=clusterRadius[c.id]
           const label=clusterLabelPosition(c.id)
           return <g key={`halo-${c.id}`} className="controlled-cluster">
-            <ellipse className="cluster-halo halo-shadow" cx={x} cy={y+3} rx={r+34} ry={r+30} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-blur)"/>
-            <ellipse className="cluster-halo halo-core" cx={x} cy={y} rx={r+8} ry={r+4} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-soft)"/>
+            <ellipse className="cluster-halo halo-shadow" cx={x} cy={y+3} rx={r+42} ry={r+38} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-blur)"/>
+            <ellipse className="cluster-halo halo-core" cx={x} cy={y} rx={r+16} ry={r+12} fill={`url(#expertise-halo-${c.id})`} filter="url(#expertise-halo-soft)"/>
             <text className="controlled-cluster-name" x={label.x} y={label.y} textAnchor="middle">
               {wrap(c.label,27).map((line,i)=><tspan key={i} x={label.x} dy={i?18:0}>{line}</tspan>)}
             </text>
@@ -182,6 +207,15 @@ export default function ExpertiseConstellation({nodes,edges,selected,onSelect,no
             <circle r="20" fill={c.color}/>
             {[0,1,2,3,4,5].map(i=><circle key={i} cx={Math.cos(i*Math.PI/3)*43} cy={Math.sin(i*Math.PI/3)*43} r="7" fill={c.color}/>) }
           </g>
+        })}
+
+        {!selected && structureEdges.map((e,idx)=>{
+          const a=positions[e.source],b=positions[e.target]; if(!a||!b) return null
+          const clusterColor=clusterMap[e.cluster]?.color || '#9AA9BD'
+          return <line key={`structure-${idx}-${e.source}-${e.target}`}
+            className={`constellation-edge structure-edge ${e.kind}`}
+            x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+            style={{stroke:clusterColor,opacity:e.kind==='hub'?0.72:(e.kind==='ring'?0.46:0.32)}}/>
         })}
 
         {visibleEdges.map(e=>{
