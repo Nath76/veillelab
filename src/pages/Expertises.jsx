@@ -37,10 +37,48 @@ export default function Expertises({data}){
       <section className="rail-section display-section"><h3>Affichage</h3><label>Taille des nœuds<input type="range" min="0.8" max="1.35" step="0.05" value={nodeSize} onChange={e=>setNodeSize(Number(e.target.value))}/><span><small>Petite</small><small>Grande</small></span></label><label>Densité des liens<input type="range" min="0.6" max="1.8" step="0.1" value={linkDensity} onChange={e=>setLinkDensity(Number(e.target.value))}/><span><small>Faible</small><small>Élevée</small></span></label></section>
     </aside>
 
-    <section className="graph-workspace">
-      <div className="workspace-toolbar"><div><h1>Carte des expertises ministérielles</h1><p className="workspace-subtitle">Explorez les expertises mobilisées par les entités du ministère de l’Intérieur.</p><div className="big-count"><strong>{overviewNodes.length}</strong><span>nœuds · {Math.min(220,overviewLinks.length)} liens visibles</span><Icon name="info" size={17}/></div></div><div className="toolbar-actions"><button onClick={clear}><Icon name="reset" size={17}/>Réinitialiser</button><button onClick={()=>setFitToken(x=>x+1)}><Icon name="target" size={17}/>Ajuster à l’écran</button></div></div>
-      <ExpertiseConstellation nodes={filtered} edges={visibleEdges} selected={selected} onSelect={setSelected} nodeSize={nodeSize} linkDensity={linkDensity} resetToken={resetToken} fitToken={fitToken}/>
-    </section>
+<section className="graph-workspace">
+  <div className="workspace-toolbar">
+    <div>
+      <h1>Carte des expertises ministérielles</h1>
+
+      <p className="workspace-subtitle">
+        Explorez les expertises mobilisées par les entités du ministère de l’Intérieur.
+      </p>
+
+      <div className="big-count">
+        <strong>{filtered.length}</strong>
+        <span>
+          nœuds ({overviewNodes.length} affichés) · {visibleEdges.length} relations ({overviewLinks.length} affichées)
+        </span>
+        <Icon name="info" size={17}/>
+      </div>
+    </div>
+
+    <div className="toolbar-actions">
+      <button onClick={clear}>
+        <Icon name="reset" size={17}/>
+        Réinitialiser
+      </button>
+
+      <button onClick={() => setFitToken(x => x + 1)}>
+        <Icon name="target" size={17}/>
+        Ajuster à l’écran
+      </button>
+    </div>
+  </div>
+
+  <ExpertiseConstellation
+    nodes={filtered}
+    edges={visibleEdges}
+    selected={selected}
+    onSelect={setSelected}
+    nodeSize={nodeSize}
+    linkDensity={linkDensity}
+    resetToken={resetToken}
+    fitToken={fitToken}
+  />
+</section>
 
     {selected&&<aside className="detail-drawer">
       <button className="drawer-close" onClick={()=>setSelected(null)}><Icon name="close"/></button>
