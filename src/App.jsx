@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Header from './components/Header.jsx'
-import LandingPage from './LandingPage.jsx''
+import LandingPage from './LandingPage.jsx'
 import { useData } from './hooks/useData.js'
 import Explorer from './pages/Explorer.jsx'
 import Expertises from './pages/Expertises.jsx'
