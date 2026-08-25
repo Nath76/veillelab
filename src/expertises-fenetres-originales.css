@@ -1,0 +1,37 @@
+/* ONGLET 1 UNIQUEMENT — restauration exacte des fenêtres d’origine */
+
+.expertise-screen.screen.graph-screen{
+  max-width:none!important;margin:0!important;min-height:calc(100vh - 70px)!important;padding:0!important;
+  display:grid!important;grid-template-columns:280px minmax(650px,1fr)!important;background:#fff!important;
+}
+.expertise-screen.screen.graph-screen.has-drawer{grid-template-columns:280px minmax(650px,1fr) 340px!important}
+.expertise-screen>.left-rail{display:block!important;background:#fbfcfe!important;border-right:1px solid var(--q-line,#dde4ee)!important;padding:26px 20px 30px!important;min-height:calc(100vh - 70px)!important;position:relative!important;z-index:5!important;overflow:auto!important;max-height:calc(100vh - 70px)!important}
+.expertise-screen>.graph-workspace{display:block!important;min-width:0!important;position:relative!important;padding:28px 26px 22px!important;background:radial-gradient(circle at 50% 42%,#fff 0,#fff 55%,#fbfcff 100%)!important;min-height:calc(100vh - 70px)!important;overflow:hidden!important}
+.expertise-screen>.detail-drawer{display:block!important;border-left:1px solid var(--q-line,#dde4ee)!important;background:#fff!important;padding:28px 24px 30px!important;min-height:calc(100vh - 70px)!important;position:relative!important;overflow:auto!important;max-height:calc(100vh - 70px)!important;box-shadow:-10px 0 26px rgba(22,42,72,.06)!important;z-index:6!important}
+.expertise-screen .workspace-toolbar{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:20px!important;position:relative!important;z-index:4!important}
+.expertise-screen .workspace-toolbar h1{font-size:28px!important;line-height:1.08!important;letter-spacing:-.65px!important;margin:0 0 7px!important;color:#071d47!important}
+.expertise-screen .workspace-subtitle{font-size:13px!important;color:#536985!important;margin:0 0 9px!important;line-height:1.4!important;font-weight:600!important}
+.expertise-screen .constellation-shell.model-b{height:calc(100vh - 210px)!important;min-height:590px!important;position:relative!important;overflow:hidden!important;cursor:grab!important}
+.expertise-screen .rail-section{padding:0 0 21px!important;margin-bottom:19px!important;border-bottom:1px solid #e6ebf3!important;position:relative!important}
+.expertise-screen .rail-section:last-child{border-bottom:0!important}
+.expertise-screen .rail-section h3{font-size:14px!important;margin:0 0 13px!important;font-weight:760!important;display:flex!important;align-items:center!important;gap:8px!important;color:#12264d!important}
+.expertise-screen .left-rail select{width:100%!important;height:42px!important;border:1px solid #d8e1ee!important;border-radius:9px!important;background:#fff!important;padding:0 10px!important;color:#18305f!important;font-size:11px!important}
+.expertise-screen .detail-drawer h2{font-size:23px!important;line-height:1.24!important;margin:0 0 17px!important;color:#071c45!important}
+.expertise-screen .drawer-definition{font-size:11px!important;line-height:1.65!important;color:#536686!important;margin:0 0 23px!important}
+
+/* Graphe demandé : halos ombrés plus colorés et relations visibles */
+.expertise-screen .constellation-shell.model-b .cluster-halo{pointer-events:none;stroke:none}
+.expertise-screen .constellation-shell.model-b .halo-shadow{opacity:1}
+.expertise-screen .constellation-shell.model-b .halo-core{opacity:1}
+.expertise-screen .constellation-shell.model-b .constellation-edge.structure-edge.hub{stroke-width:1.8}
+.expertise-screen .constellation-shell.model-b .constellation-edge.structure-edge.ring{stroke-width:1.25}
+.expertise-screen .constellation-shell.model-b .constellation-edge.structure-edge.mesh{stroke-width:1.05}
+.expertise-screen .constellation-shell.model-b .constellation-edge.intra{stroke-width:1.8}
+.expertise-screen .constellation-shell.model-b .constellation-edge.inter{stroke-width:1.2;stroke-dasharray:2.8 3.7}
+
+@media(max-width:1380px){
+  .expertise-screen.screen.graph-screen{grid-template-columns:245px minmax(610px,1fr)!important}
+  .expertise-screen.screen.graph-screen.has-drawer{grid-template-columns:245px minmax(610px,1fr) 310px!important}
+  .expertise-screen>.left-rail{padding:22px 16px!important}
+  .expertise-screen>.detail-drawer{padding:24px 18px!important}
+}
