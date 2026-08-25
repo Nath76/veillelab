@@ -424,3 +424,62 @@ body{color:var(--ink);font-size:16px;line-height:1.55}
 @media(max-width:1280px){.expertise-guided-v02{grid-template-columns:270px minmax(590px,1fr)}.expertise-guided-v02.has-drawer{grid-template-columns:270px minmax(590px,1fr) 310px}.expertise-guide-column{padding-left:14px}.expertise-map-heading h1{font-size:24px}}
 @media(max-width:980px){.expertise-guided-v02,.expertise-guided-v02.has-drawer{grid-template-columns:1fr}.expertise-guide-column{max-height:none;border-right:0;border-bottom:1px solid #e1e6ed;display:grid;grid-template-columns:1fr 1fr}.expertise-intro-card{grid-row:span 2}.expertise-detail-drawer{min-height:auto;max-height:none;border-left:0;border-top:1px solid #e1e6ed}.expertise-map-frame{height:650px}.expertise-map-status{grid-template-columns:80px 80px minmax(0,1fr)}}
 @media(max-width:680px){.expertise-guide-column{display:flex;padding:14px}.expertise-map-column{padding:18px 12px}.expertise-map-heading{display:block}.expertise-map-actions{margin-top:12px}.expertise-map-status{height:auto;grid-template-columns:1fr 1fr}.expertise-map-status p{grid-column:1/-1;padding:5px 0}.expertise-map-frame{height:560px;min-height:560px}.constellation-shell.model-b .controlled-cluster-name{font-size:13px}}
+/* ===== ONGLET 2 — typographie plus lisible ===== */
+
+/* Grand panneau d’introduction */
+.explorer-screen .explorer-hero-eyebrow,
+.explorer-screen .explorer-intro-eyebrow {
+  font-size: 12px !important;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.explorer-screen .explorer-hero h1,
+.explorer-screen .explorer-intro h1,
+.explorer-screen .explorer-empty-state h1 {
+  font-size: 26px !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+}
+
+.explorer-screen .explorer-hero p,
+.explorer-screen .explorer-intro p,
+.explorer-screen .explorer-empty-state p {
+  font-size: 18px !important;
+  line-height: 1.7 !important;
+}
+
+.explorer-screen .explorer-hero strong,
+.explorer-screen .explorer-intro strong,
+.explorer-screen .explorer-empty-state strong {
+  font-weight: 800 !important;
+}
+
+/* Carte “Comment fonctionne cet espace ?” */
+.explorer-screen .explorer-how-card h2,
+.explorer-screen .how-card h2 {
+  font-size: 20px !important;
+  line-height: 1.35 !important;
+  font-weight: 800 !important;
+}
+
+.explorer-screen .explorer-how-card .step-number,
+.explorer-screen .how-card .step-number {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+
+.explorer-screen .explorer-how-card .step-title,
+.explorer-screen .how-card .step-title {
+  font-size: 18px !important;
+  line-height: 1.35 !important;
+  font-weight: 700 !important;
+}
+
+.explorer-screen .explorer-how-card .step-text,
+.explorer-screen .how-card .step-text,
+.explorer-screen .explorer-how-card p,
+.explorer-screen .how-card p {
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+}
