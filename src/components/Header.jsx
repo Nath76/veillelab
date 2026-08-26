@@ -4,7 +4,7 @@ import Icon from './Icon.jsx'
 const tabs=[
   {id:'expertises',label:'Expertises ministérielles',icon:'graph'},
   {id:'explorer',label:'Explorer une publication',icon:'compass'},
-  {id:'atelier',label:'Atelier IA',icon:'spark'},
+  {id:'atelier',label:'Atelier veille',icon:'spark'},
   {id:'about',label:'La veille à l’IHEMI',icon:'building'},
 ]
 
