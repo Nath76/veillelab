@@ -1,784 +1,800 @@
 // QUIRITÈS VEILLE LAB — ONGLET 1
-// Géométrie issue du GEXF validé le 28 août 2026.
+// VERSION LISIBLE / FIDÈLE AUX DONNÉES
+// Aucun nœud, lien ou rattachement de cluster n'est ajouté.
+// Le placement des titres relève uniquement de la présentation.
 // ME113 — Socialisations numériques est exclu.
-// Les numéros de clusters sont des identifiants techniques Gephi.
 
 export const expertiseGephiLayout = {
   "ME084": {
-    "x": -322.446,
-    "y": 24.502,
+    "x": -432.287,
+    "y": 94.352,
     "size": 12.714,
     "cluster": 0
   },
   "ME093": {
-    "x": -346.73,
-    "y": 32.841,
+    "x": -662.027,
+    "y": 15.461,
+    "size": 11.143,
+    "cluster": 0
+  },
+  "ME054": {
+    "x": -600.686,
+    "y": -79.812,
     "size": 11.143,
     "cluster": 0
   },
   "ME019": {
-    "x": -186.178,
-    "y": -60.748,
+    "x": -293.25,
+    "y": 9.11,
     "size": 19.0,
     "cluster": 11
   },
-  "ME054": {
-    "x": -340.246,
-    "y": 42.911,
-    "size": 11.143,
-    "cluster": 0
-  },
-  "ME029": {
-    "x": -333.396,
-    "y": -109.929,
-    "size": 14.286,
-    "cluster": 1
-  },
-  "ME085": {
-    "x": -347.142,
-    "y": -96.574,
-    "size": 9.571,
-    "cluster": 1
-  },
-  "ME050": {
-    "x": -336.973,
-    "y": -128.709,
-    "size": 9.571,
-    "cluster": 1
-  },
-  "ME076": {
-    "x": -357.37,
-    "y": -117.134,
-    "size": 9.571,
-    "cluster": 1
-  },
-  "ME067": {
-    "x": 590.054,
-    "y": -316.098,
-    "size": 14.286,
-    "cluster": 2
-  },
-  "ME086": {
-    "x": 596.605,
-    "y": -266.288,
-    "size": 11.143,
-    "cluster": 2
-  },
-  "ME101": {
-    "x": 582.009,
-    "y": -279.644,
-    "size": 11.143,
-    "cluster": 2
-  },
-  "ME004": {
-    "x": 607.014,
-    "y": -283.019,
-    "size": 11.143,
-    "cluster": 2
-  },
-  "ME058": {
-    "x": 592.104,
-    "y": -345.821,
-    "size": 11.143,
-    "cluster": 2
-  },
-  "ME106": {
-    "x": 579.855,
-    "y": -343.551,
-    "size": 11.143,
-    "cluster": 2
-  },
-  "ME090": {
-    "x": 13.637,
-    "y": 118.733,
-    "size": 14.286,
-    "cluster": 3
-  },
-  "ME047": {
-    "x": -2.367,
-    "y": 68.019,
-    "size": 14.286,
-    "cluster": 3
-  },
-  "ME016": {
-    "x": -4.719,
-    "y": 53.433,
-    "size": 14.286,
-    "cluster": 3
-  },
-  "ME024": {
-    "x": 29.982,
-    "y": 149.266,
-    "size": 11.143,
-    "cluster": 3
-  },
-  "ME022": {
-    "x": 18.065,
-    "y": 150.468,
-    "size": 11.143,
-    "cluster": 3
-  },
-  "ME096": {
-    "x": 204.634,
-    "y": -512.712,
-    "size": 11.143,
-    "cluster": 10
-  },
-  "ME042": {
-    "x": 117.038,
-    "y": -360.551,
-    "size": 15.857,
-    "cluster": 10
-  },
-  "ME091": {
-    "x": 34.805,
-    "y": -350.409,
-    "size": 15.857,
-    "cluster": 10
-  },
-  "ME032": {
-    "x": 126.87,
-    "y": -329.728,
-    "size": 14.286,
-    "cluster": 10
-  },
-  "ME057": {
-    "x": 189.534,
-    "y": -494.146,
-    "size": 12.714,
-    "cluster": 10
-  },
-  "ME003": {
-    "x": 195.763,
-    "y": -520.11,
-    "size": 11.143,
-    "cluster": 10
-  },
-  "ME055": {
-    "x": 70.27,
-    "y": -366.234,
-    "size": 11.143,
-    "cluster": 10
-  },
-  "ME068": {
-    "x": 343.45,
-    "y": 605.145,
-    "size": 11.143,
-    "cluster": 12
-  },
-  "ME088": {
-    "x": 343.576,
-    "y": 632.263,
-    "size": 11.143,
-    "cluster": 12
-  },
-  "ME056": {
-    "x": -274.096,
-    "y": 884.189,
-    "size": 9.571,
-    "cluster": 5
-  },
-  "ME105": {
-    "x": -629.88,
-    "y": 206.275,
-    "size": 11.143,
-    "cluster": 4
-  },
-  "ME100": {
-    "x": -648.766,
-    "y": 205.121,
-    "size": 12.714,
-    "cluster": 4
-  },
-  "ME027": {
-    "x": -658.818,
-    "y": 188.544,
-    "size": 11.143,
-    "cluster": 4
-  },
-  "ME010": {
-    "x": -279.267,
-    "y": 889.462,
-    "size": 9.571,
-    "cluster": 5
-  },
-  "ME017": {
-    "x": 343.747,
-    "y": 646.112,
-    "size": 9.571,
-    "cluster": 12
-  },
-  "ME013": {
-    "x": -639.548,
-    "y": 189.805,
-    "size": 12.714,
-    "cluster": 4
-  },
-  "ME082": {
-    "x": 343.251,
-    "y": 578.572,
-    "size": 11.143,
-    "cluster": 12
-  },
-  "ME002": {
-    "x": -225.092,
-    "y": -606.286,
-    "size": 9.571,
-    "cluster": 6
-  },
-  "ME094": {
-    "x": 829.116,
-    "y": -32.459,
-    "size": 9.571,
-    "cluster": 7
-  },
-  "ME077": {
-    "x": -197.343,
-    "y": -562.496,
-    "size": 11.143,
-    "cluster": 6
-  },
-  "ME065": {
-    "x": -69.531,
-    "y": -368.002,
-    "size": 12.714,
-    "cluster": 6
-  },
-  "ME043": {
-    "x": -191.477,
-    "y": -527.134,
-    "size": 12.714,
-    "cluster": 6
-  },
-  "ME092": {
-    "x": -237.04,
-    "y": -552.457,
-    "size": 12.714,
-    "cluster": 6
-  },
-  "ME083": {
-    "x": -135.229,
-    "y": -454.054,
-    "size": 11.143,
-    "cluster": 6
-  },
-  "ME033": {
-    "x": -257.553,
-    "y": -548.583,
-    "size": 9.571,
-    "cluster": 6
-  },
-  "ME060": {
-    "x": -221.303,
-    "y": -586.602,
-    "size": 12.714,
-    "cluster": 6
-  },
-  "ME062": {
-    "x": 834.098,
-    "y": -37.953,
-    "size": 9.571,
-    "cluster": 7
-  },
-  "ME107": {
-    "x": 295.482,
-    "y": 192.728,
-    "size": 12.714,
-    "cluster": 8
-  },
-  "ME039": {
-    "x": 295.316,
-    "y": 211.317,
-    "size": 12.714,
-    "cluster": 8
-  },
-  "ME020": {
-    "x": 262.201,
-    "y": 171.816,
-    "size": 15.857,
-    "cluster": 8
-  },
-  "ME048": {
-    "x": 184.351,
-    "y": 96.724,
-    "size": 12.714,
-    "cluster": 8
-  },
-  "ME066": {
-    "x": 125.135,
-    "y": 43.265,
-    "size": 20.571,
-    "cluster": 8
-  },
-  "ME049": {
-    "x": 164.896,
-    "y": 78.275,
-    "size": 11.143,
-    "cluster": 8
-  },
-  "ME006": {
-    "x": 279.261,
-    "y": 204.568,
-    "size": 12.714,
-    "cluster": 8
-  },
-  "ME070": {
-    "x": 221.237,
-    "y": 129.008,
-    "size": 11.143,
-    "cluster": 8
-  },
-  "ME114": {
-    "x": -5.02,
-    "y": -62.106,
-    "size": 9.571,
-    "cluster": 3
-  },
-  "ME109": {
-    "x": 237.218,
-    "y": -213.337,
-    "size": 11.143,
-    "cluster": 10
-  },
-  "ME059": {
-    "x": 229.882,
-    "y": -194.954,
-    "size": 12.714,
-    "cluster": 10
-  },
-  "ME111": {
-    "x": 201.981,
-    "y": -175.483,
-    "size": 12.714,
-    "cluster": 10
-  },
-  "ME052": {
-    "x": 163.386,
-    "y": -152.943,
-    "size": 12.714,
-    "cluster": 10
-  },
-  "ME030": {
-    "x": 196.783,
-    "y": -221.412,
-    "size": 17.429,
-    "cluster": 10
-  },
-  "ME064": {
-    "x": -602.161,
-    "y": -286.532,
-    "size": 12.714,
-    "cluster": 13
-  },
-  "ME018": {
-    "x": -623.795,
-    "y": -299.366,
-    "size": 14.286,
-    "cluster": 13
-  },
-  "ME015": {
-    "x": -605.172,
-    "y": -268.871,
-    "size": 12.714,
-    "cluster": 13
-  },
-  "ME115": {
-    "x": -636.391,
-    "y": -320.847,
-    "size": 9.571,
-    "cluster": 13
-  },
   "ME028": {
-    "x": -146.896,
-    "y": 190.645,
+    "x": -267.841,
+    "y": -153.495,
     "size": 12.714,
     "cluster": 11
   },
-  "ME051": {
-    "x": -83.237,
-    "y": 363.246,
-    "size": 14.286,
-    "cluster": 14
-  },
-  "ME104": {
-    "x": -54.466,
-    "y": 360.737,
-    "size": 9.571,
-    "cluster": 14
-  },
-  "ME011": {
-    "x": -131.467,
-    "y": 418.98,
-    "size": 17.429,
-    "cluster": 14
-  },
-  "ME116": {
-    "x": -22.563,
-    "y": 62.843,
-    "size": 11.143,
-    "cluster": 3
-  },
-  "ME117": {
-    "x": 0.024,
-    "y": 0.009,
-    "size": 30.0,
-    "cluster": 3
-  },
-  "ME040": {
-    "x": 47.703,
-    "y": 10.994,
-    "size": 12.714,
-    "cluster": 3
-  },
-  "ME061": {
-    "x": 62.9,
-    "y": 3.744,
-    "size": 12.714,
-    "cluster": 3
-  },
   "ME063": {
-    "x": -153.005,
-    "y": 162.704,
+    "x": -271.793,
+    "y": -135.423,
     "size": 11.143,
     "cluster": 11
   },
   "ME087": {
-    "x": -148.05,
-    "y": 101.491,
+    "x": -268.588,
+    "y": -95.829,
     "size": 19.0,
     "cluster": 11
   },
-  "ME014": {
-    "x": -20.824,
-    "y": 2.664,
-    "size": 9.571,
-    "cluster": 3
-  },
-  "ME102": {
-    "x": -141.35,
-    "y": 495.011,
-    "size": 12.714,
-    "cluster": 14
-  },
-  "ME099": {
-    "x": -184.937,
-    "y": 477.396,
-    "size": 12.714,
-    "cluster": 14
-  },
-  "ME075": {
-    "x": -221.23,
-    "y": 585.378,
-    "size": 12.714,
-    "cluster": 14
-  },
-  "ME073": {
-    "x": -192.725,
-    "y": 537.505,
-    "size": 14.286,
-    "cluster": 14
-  },
   "ME038": {
-    "x": -113.191,
-    "y": -41.099,
+    "x": -246.041,
+    "y": -3.6,
     "size": 12.714,
     "cluster": 11
   },
   "ME045": {
-    "x": -65.963,
-    "y": -25.604,
+    "x": -215.493,
+    "y": -13.622,
     "size": 12.714,
     "cluster": 11
   },
-  "ME036": {
-    "x": -203.391,
-    "y": 558.423,
-    "size": 12.714,
-    "cluster": 14
-  },
-  "ME078": {
-    "x": -233.684,
-    "y": 604.988,
-    "size": 9.571,
-    "cluster": 14
-  },
   "ME108": {
-    "x": -113.774,
-    "y": -244.538,
+    "x": -246.418,
+    "y": 127.988,
     "size": 11.143,
     "cluster": 11
   },
   "ME118": {
-    "x": -163.568,
-    "y": -151.029,
+    "x": -278.626,
+    "y": 67.505,
     "size": 12.714,
     "cluster": 11
   },
   "ME009": {
-    "x": -83.486,
-    "y": -289.342,
+    "x": -226.827,
+    "y": 156.968,
     "size": 14.286,
     "cluster": 11
   },
-  "ME124": {
-    "x": -2.23,
-    "y": -26.597,
-    "size": 11.143,
-    "cluster": 3
-  },
-  "ME046": {
-    "x": 188.624,
-    "y": 8.787,
-    "size": 11.143,
-    "cluster": 8
-  },
-  "ME071": {
-    "x": 204.386,
-    "y": 1.283,
-    "size": 9.571,
-    "cluster": 8
-  },
-  "ME125": {
-    "x": 43.91,
-    "y": -54.541,
-    "size": 11.143,
-    "cluster": 3
-  },
-  "ME126": {
-    "x": 342.954,
-    "y": 564.513,
-    "size": 9.571,
-    "cluster": 12
-  },
-  "ME127": {
-    "x": -621.925,
-    "y": -274.138,
-    "size": 12.714,
-    "cluster": 13
-  },
-  "ME080": {
-    "x": -111.206,
-    "y": 365.823,
-    "size": 12.714,
-    "cluster": 14
-  },
-  "ME129": {
-    "x": -116.344,
-    "y": 333.04,
-    "size": 14.286,
-    "cluster": 14
-  },
   "ME130": {
-    "x": -126.787,
-    "y": 106.348,
+    "x": -254.835,
+    "y": -98.971,
     "size": 9.571,
     "cluster": 11
   },
   "ME131": {
-    "x": -164.44,
-    "y": 83.117,
+    "x": -279.189,
+    "y": -83.945,
     "size": 9.571,
     "cluster": 11
   },
   "ME133": {
-    "x": -174.579,
-    "y": 109.653,
+    "x": -285.748,
+    "y": -101.109,
     "size": 9.571,
     "cluster": 11
   },
-  "ME081": {
-    "x": 593.292,
-    "y": 235.954,
-    "size": 12.714,
-    "cluster": 15
-  },
-  "ME134": {
-    "x": 610.973,
-    "y": 232.969,
-    "size": 12.714,
-    "cluster": 15
-  },
-  "ME135": {
-    "x": 590.379,
-    "y": 218.19,
-    "size": 12.714,
-    "cluster": 15
-  },
-  "ME136": {
-    "x": 608.068,
-    "y": 215.073,
-    "size": 12.714,
-    "cluster": 15
-  },
   "ME074": {
-    "x": -89.226,
-    "y": -32.817,
+    "x": -230.54,
+    "y": -8.957,
     "size": 14.286,
     "cluster": 11
   },
   "ME138": {
-    "x": -141.012,
-    "y": -201.666,
+    "x": -264.036,
+    "y": 100.258,
     "size": 12.714,
     "cluster": 11
   },
   "ME139": {
-    "x": -151.43,
-    "y": -175.176,
+    "x": -270.774,
+    "y": 83.124,
     "size": 14.286,
     "cluster": 11
   },
-  "ME140": {
-    "x": -3.777,
-    "y": -43.108,
+  "ME029": {
+    "x": -434.344,
+    "y": -171.198,
+    "size": 14.286,
+    "cluster": 1
+  },
+  "ME085": {
+    "x": -548.389,
+    "y": -282.0,
+    "size": 9.571,
+    "cluster": 1
+  },
+  "ME050": {
+    "x": -464.019,
+    "y": -15.379,
+    "size": 9.571,
+    "cluster": 1
+  },
+  "ME076": {
+    "x": -633.248,
+    "y": -111.423,
+    "size": 9.571,
+    "cluster": 1
+  },
+  "ME067": {
+    "x": 555.613,
+    "y": -82.729,
+    "size": 14.286,
+    "cluster": 2
+  },
+  "ME086": {
+    "x": 579.179,
+    "y": -261.907,
+    "size": 11.143,
+    "cluster": 2
+  },
+  "ME101": {
+    "x": 526.673,
+    "y": -213.862,
+    "size": 11.143,
+    "cluster": 2
+  },
+  "ME004": {
+    "x": 616.622,
+    "y": -201.719,
+    "size": 11.143,
+    "cluster": 2
+  },
+  "ME058": {
+    "x": 562.987,
+    "y": 24.192,
+    "size": 11.143,
+    "cluster": 2
+  },
+  "ME106": {
+    "x": 518.925,
+    "y": 16.025,
+    "size": 11.143,
+    "cluster": 2
+  },
+  "ME090": {
+    "x": 18.629,
+    "y": -30.076,
+    "size": 14.286,
+    "cluster": 3
+  },
+  "ME047": {
+    "x": -2.497,
+    "y": 36.869,
+    "size": 14.286,
+    "cluster": 3
+  },
+  "ME016": {
+    "x": -5.602,
+    "y": 56.123,
+    "size": 14.286,
+    "cluster": 3
+  },
+  "ME024": {
+    "x": 40.205,
+    "y": -70.381,
+    "size": 11.143,
+    "cluster": 3
+  },
+  "ME022": {
+    "x": 24.474,
+    "y": -71.968,
+    "size": 11.143,
+    "cluster": 3
+  },
+  "ME114": {
+    "x": -6.0,
+    "y": 208.639,
+    "size": 9.571,
+    "cluster": 3
+  },
+  "ME116": {
+    "x": -29.157,
+    "y": 43.701,
+    "size": 11.143,
+    "cluster": 3
+  },
+  "ME117": {
+    "x": 0.659,
+    "y": 126.645,
+    "size": 30.0,
+    "cluster": 3
+  },
+  "ME040": {
+    "x": 63.597,
+    "y": 112.144,
     "size": 12.714,
     "cluster": 3
   },
-  "ME141": {
-    "x": -164.183,
-    "y": 489.351,
-    "size": 14.286,
-    "cluster": 14
+  "ME061": {
+    "x": 83.658,
+    "y": 121.714,
+    "size": 12.714,
+    "cluster": 3
   },
-  "ME098": {
-    "x": 155.417,
-    "y": -309.939,
+  "ME014": {
+    "x": -26.861,
+    "y": 123.14,
+    "size": 9.571,
+    "cluster": 3
+  },
+  "ME124": {
+    "x": -2.317,
+    "y": 161.766,
+    "size": 11.143,
+    "cluster": 3
+  },
+  "ME125": {
+    "x": 58.59,
+    "y": 198.653,
+    "size": 11.143,
+    "cluster": 3
+  },
+  "ME140": {
+    "x": -4.359,
+    "y": 183.561,
+    "size": 12.714,
+    "cluster": 3
+  },
+  "ME143": {
+    "x": 86.979,
+    "y": 224.47,
+    "size": 12.714,
+    "cluster": 3
+  },
+  "ME096": {
+    "x": 214.112,
+    "y": -63.425,
+    "size": 11.143,
+    "cluster": 10
+  },
+  "ME042": {
+    "x": 141.73,
+    "y": -189.159,
+    "size": 15.857,
+    "cluster": 10
+  },
+  "ME091": {
+    "x": 73.778,
+    "y": -197.539,
+    "size": 15.857,
+    "cluster": 10
+  },
+  "ME032": {
+    "x": 149.853,
+    "y": -214.628,
+    "size": 14.286,
+    "cluster": 10
+  },
+  "ME057": {
+    "x": 201.634,
+    "y": -78.766,
     "size": 12.714,
     "cluster": 10
   },
-  "ME142": {
-    "x": 78.883,
-    "y": 33.607,
+  "ME003": {
+    "x": 206.782,
+    "y": -57.311,
+    "size": 11.143,
+    "cluster": 10
+  },
+  "ME055": {
+    "x": 103.084,
+    "y": -184.463,
+    "size": 11.143,
+    "cluster": 10
+  },
+  "ME109": {
+    "x": 241.037,
+    "y": -310.805,
+    "size": 11.143,
+    "cluster": 10
+  },
+  "ME059": {
+    "x": 234.975,
+    "y": -325.995,
+    "size": 12.714,
+    "cluster": 10
+  },
+  "ME111": {
+    "x": 211.92,
+    "y": -342.085,
+    "size": 12.714,
+    "cluster": 10
+  },
+  "ME052": {
+    "x": 180.028,
+    "y": -360.71,
+    "size": 12.714,
+    "cluster": 10
+  },
+  "ME030": {
+    "x": 207.625,
+    "y": -304.133,
+    "size": 17.429,
+    "cluster": 10
+  },
+  "ME098": {
+    "x": 173.443,
+    "y": -230.981,
+    "size": 12.714,
+    "cluster": 10
+  },
+  "ME068": {
+    "x": 500.186,
+    "y": 365.606,
+    "size": 11.143,
+    "cluster": 12
+  },
+  "ME088": {
+    "x": 500.624,
+    "y": 272.059,
+    "size": 11.143,
+    "cluster": 12
+  },
+  "ME017": {
+    "x": 501.213,
+    "y": 224.282,
+    "size": 9.571,
+    "cluster": 12
+  },
+  "ME082": {
+    "x": 499.5,
+    "y": 457.276,
+    "size": 11.143,
+    "cluster": 12
+  },
+  "ME126": {
+    "x": 498.477,
+    "y": 505.777,
+    "size": 9.571,
+    "cluster": 12
+  },
+  "ME056": {
+    "x": 5.144,
+    "y": 827.627,
+    "size": 9.571,
+    "cluster": 5
+  },
+  "ME010": {
+    "x": -245.144,
+    "y": 572.373,
+    "size": 9.571,
+    "cluster": 5
+  },
+  "ME105": {
+    "x": -494.81,
+    "y": 126.859,
+    "size": 11.143,
+    "cluster": 4
+  },
+  "ME100": {
+    "x": -672.447,
+    "y": 137.721,
+    "size": 12.714,
+    "cluster": 4
+  },
+  "ME027": {
+    "x": -767.0,
+    "y": 293.642,
+    "size": 11.143,
+    "cluster": 4
+  },
+  "ME013": {
+    "x": -585.743,
+    "y": 281.777,
+    "size": 12.714,
+    "cluster": 4
+  },
+  "ME002": {
+    "x": -331.701,
+    "y": -283.22,
+    "size": 9.571,
+    "cluster": 6
+  },
+  "ME077": {
+    "x": -305.261,
+    "y": -324.942,
+    "size": 11.143,
+    "cluster": 6
+  },
+  "ME065": {
+    "x": -183.483,
+    "y": -510.255,
+    "size": 12.714,
+    "cluster": 6
+  },
+  "ME043": {
+    "x": -299.673,
+    "y": -358.636,
+    "size": 12.714,
+    "cluster": 6
+  },
+  "ME092": {
+    "x": -343.085,
+    "y": -334.508,
+    "size": 12.714,
+    "cluster": 6
+  },
+  "ME083": {
+    "x": -246.08,
+    "y": -428.265,
+    "size": 11.143,
+    "cluster": 6
+  },
+  "ME033": {
+    "x": -362.629,
+    "y": -338.199,
+    "size": 9.571,
+    "cluster": 6
+  },
+  "ME060": {
+    "x": -328.09,
+    "y": -301.975,
+    "size": 12.714,
+    "cluster": 6
+  },
+  "ME094": {
+    "x": 604.257,
+    "y": -107.627,
+    "size": 9.571,
+    "cluster": 7
+  },
+  "ME062": {
+    "x": 835.743,
+    "y": 147.627,
+    "size": 9.571,
+    "cluster": 7
+  },
+  "ME107": {
+    "x": 444.916,
+    "y": -39.706,
+    "size": 12.714,
+    "cluster": 8
+  },
+  "ME039": {
+    "x": 444.715,
+    "y": -62.276,
+    "size": 12.714,
+    "cluster": 8
+  },
+  "ME020": {
+    "x": 404.509,
+    "y": -14.316,
+    "size": 15.857,
+    "cluster": 8
+  },
+  "ME048": {
+    "x": 309.987,
+    "y": 76.856,
+    "size": 12.714,
+    "cluster": 8
+  },
+  "ME066": {
+    "x": 238.091,
+    "y": 141.763,
+    "size": 20.571,
+    "cluster": 8
+  },
+  "ME049": {
+    "x": 286.366,
+    "y": 99.256,
     "size": 11.143,
     "cluster": 8
   },
-  "ME143": {
-    "x": 65.416,
-    "y": -74.098,
+  "ME006": {
+    "x": 425.221,
+    "y": -54.082,
     "size": 12.714,
-    "cluster": 3
+    "cluster": 8
+  },
+  "ME070": {
+    "x": 354.772,
+    "y": 37.658,
+    "size": 11.143,
+    "cluster": 8
+  },
+  "ME046": {
+    "x": 315.176,
+    "y": 183.624,
+    "size": 11.143,
+    "cluster": 8
+  },
+  "ME071": {
+    "x": 334.313,
+    "y": 192.735,
+    "size": 9.571,
+    "cluster": 8
+  },
+  "ME142": {
+    "x": 181.934,
+    "y": 153.489,
+    "size": 11.143,
+    "cluster": 8
+  },
+  "ME064": {
+    "x": -538.335,
+    "y": -145.576,
+    "size": 12.714,
+    "cluster": 13
+  },
+  "ME018": {
+    "x": -636.912,
+    "y": -87.1,
+    "size": 14.286,
+    "cluster": 13
+  },
+  "ME015": {
+    "x": -552.055,
+    "y": -226.052,
+    "size": 12.714,
+    "cluster": 13
+  },
+  "ME115": {
+    "x": -694.307,
+    "y": 10.777,
+    "size": 9.571,
+    "cluster": 13
+  },
+  "ME127": {
+    "x": -628.392,
+    "y": -202.049,
+    "size": 12.714,
+    "cluster": 13
+  },
+  "ME051": {
+    "x": -59.366,
+    "y": 478.248,
+    "size": 14.286,
+    "cluster": 14
+  },
+  "ME104": {
+    "x": -26.2,
+    "y": 481.14,
+    "size": 9.571,
+    "cluster": 14
+  },
+  "ME011": {
+    "x": -114.964,
+    "y": 414.0,
+    "size": 17.429,
+    "cluster": 14
+  },
+  "ME102": {
+    "x": -126.357,
+    "y": 326.353,
+    "size": 12.714,
+    "cluster": 14
+  },
+  "ME099": {
+    "x": -176.603,
+    "y": 346.66,
+    "size": 12.714,
+    "cluster": 14
+  },
+  "ME075": {
+    "x": -218.44,
+    "y": 222.18,
+    "size": 12.714,
+    "cluster": 14
+  },
+  "ME073": {
+    "x": -185.58,
+    "y": 277.367,
+    "size": 14.286,
+    "cluster": 14
+  },
+  "ME036": {
+    "x": -197.877,
+    "y": 253.254,
+    "size": 12.714,
+    "cluster": 14
+  },
+  "ME078": {
+    "x": -232.797,
+    "y": 199.574,
+    "size": 9.571,
+    "cluster": 14
+  },
+  "ME080": {
+    "x": -91.607,
+    "y": 475.277,
+    "size": 12.714,
+    "cluster": 14
+  },
+  "ME129": {
+    "x": -97.53,
+    "y": 513.069,
+    "size": 14.286,
+    "cluster": 14
+  },
+  "ME141": {
+    "x": -152.679,
+    "y": 332.877,
+    "size": 14.286,
+    "cluster": 14
+  },
+  "ME081": {
+    "x": 463.382,
+    "y": 73.866,
+    "size": 12.714,
+    "cluster": 15
+  },
+  "ME134": {
+    "x": 694.663,
+    "y": 112.912,
+    "size": 12.714,
+    "cluster": 15
+  },
+  "ME135": {
+    "x": 425.285,
+    "y": 306.223,
+    "size": 12.714,
+    "cluster": 15
+  },
+  "ME136": {
+    "x": 656.67,
+    "y": 347.0,
+    "size": 12.714,
+    "cluster": 15
   }
 }
 
 export const expertiseClusters = [
   {
-    "id": 0,
-    "label": "Suivi et gestion des populations étrangères",
-    "color": "#C0C0C0",
-    "labelX": -450,
-    "labelY": -70,
-    "transdirectional": false
-  },
-  {
-    "id": 1,
-    "label": "Protection des élus et suivi des atteintes",
-    "color": "#C0C0C0",
-    "labelX": -420,
-    "labelY": 170,
-    "transdirectional": false
-  },
-  {
-    "id": 2,
-    "label": "Radicalités violentes",
-    "color": "#00BD94",
-    "labelX": 590,
-    "labelY": 365,
-    "transdirectional": false
+    "id": 11,
+    "label": "Méthodes d’analyse et recherche appliquée",
+    "color": "#99C93C",
+    "labelX": -350,
+    "labelY": -185,
+    "labelWidth": 260,
+    "transdirectional": true
   },
   {
     "id": 3,
     "label": "Observation et analyse des phénomènes de sécurité",
-    "color": "#DF89FF",
-    "labelX": 40,
-    "labelY": -125,
-    "transdirectional": false
-  },
-  {
-    "id": 4,
-    "label": "Cybercriminalité",
-    "color": "#C0C0C0",
-    "labelX": -610,
-    "labelY": -260,
-    "transdirectional": false
-  },
-  {
-    "id": 5,
-    "label": "Hacktivisme géopolitique",
-    "color": "#C0C0C0",
-    "labelX": -280,
-    "labelY": -940,
-    "transdirectional": false
-  },
-  {
-    "id": 6,
-    "label": "Innovations et technologies",
-    "color": "#FF5584",
-    "labelX": -230,
-    "labelY": 600,
-    "transdirectional": false
-  },
-  {
-    "id": 7,
-    "label": "Investigations et innovation subaquatiques",
-    "color": "#C0C0C0",
-    "labelX": 760,
-    "labelY": 80,
+    "color": "#D68AF2",
+    "labelX": 25,
+    "labelY": -35,
+    "labelWidth": 255,
     "transdirectional": false
   },
   {
     "id": 8,
     "label": "Méthodes d’analyse des phénomènes pénaux",
-    "color": "#FF8805",
-    "labelX": 310,
-    "labelY": -175,
+    "color": "#F4A33C",
+    "labelX": 370,
+    "labelY": -30,
+    "labelWidth": 245,
     "transdirectional": false
   },
   {
     "id": 10,
     "label": "Transformation de l’action publique face aux risques et crises",
-    "color": "#00C4FF",
-    "labelX": 95,
-    "labelY": 405,
-    "transdirectional": false
-  },
-  {
-    "id": 11,
-    "label": "Méthodes d’analyse et recherche appliquée",
-    "color": "#73C000",
-    "labelX": -100,
-    "labelY": 115,
-    "transdirectional": true
-  },
-  {
-    "id": 12,
-    "label": "Anticipation des menaces cyber et technologiques",
-    "color": "#D3B3B0",
-    "labelX": 350,
-    "labelY": -680,
-    "transdirectional": false
-  },
-  {
-    "id": 13,
-    "label": "Stratégies informationnelles et influence",
-    "color": "#C0C0C0",
-    "labelX": -590,
-    "labelY": 355,
+    "color": "#7ED6FF",
+    "labelX": 160,
+    "labelY": -405,
+    "labelWidth": 285,
     "transdirectional": false
   },
   {
     "id": 14,
     "label": "Valorisation et transmission des métiers et savoir-faire opérationnels",
-    "color": "#4C463E",
-    "labelX": -170,
-    "labelY": -555,
+    "color": "#5C544C",
+    "labelX": -150,
+    "labelY": 555,
+    "labelWidth": 305,
     "transdirectional": true
+  },
+  {
+    "id": 6,
+    "label": "Innovations et technologies",
+    "color": "#F46D8C",
+    "labelX": -300,
+    "labelY": -555,
+    "labelWidth": 230,
+    "transdirectional": false
+  },
+  {
+    "id": 2,
+    "label": "Radicalités violentes",
+    "color": "#12AF92",
+    "labelX": 565,
+    "labelY": -300,
+    "labelWidth": 190,
+    "transdirectional": false
+  },
+  {
+    "id": 12,
+    "label": "Anticipation des menaces cyber et technologiques",
+    "color": "#E6C8C8",
+    "labelX": 500,
+    "labelY": 565,
+    "labelWidth": 255,
+    "transdirectional": false
   },
   {
     "id": 15,
     "label": "Commandement et professionnalisation des cadres policiers",
-    "color": "#C0C0C0",
-    "labelX": 600,
-    "labelY": -295,
+    "color": "#D8DADF",
+    "labelX": 565,
+    "labelY": 410,
+    "labelWidth": 285,
+    "transdirectional": false
+  },
+  {
+    "id": 7,
+    "label": "Investigations et innovation subaquatiques",
+    "color": "#D7DBE0",
+    "labelX": 770,
+    "labelY": 5,
+    "labelWidth": 245,
+    "transdirectional": false
+  },
+  {
+    "id": 4,
+    "label": "Cybercriminalité",
+    "color": "#BCC5D0",
+    "labelX": -650,
+    "labelY": 410,
+    "labelWidth": 185,
+    "transdirectional": false
+  },
+  {
+    "id": 0,
+    "label": "Suivi et gestion des populations étrangères",
+    "color": "#C7CDD6",
+    "labelX": -670,
+    "labelY": 65,
+    "labelWidth": 250,
+    "transdirectional": false
+  },
+  {
+    "id": 1,
+    "label": "Protection des élus et suivi des atteintes",
+    "color": "#D0D5DC",
+    "labelX": -660,
+    "labelY": -245,
+    "labelWidth": 235,
+    "transdirectional": false
+  },
+  {
+    "id": 13,
+    "label": "Stratégies informationnelles et influence",
+    "color": "#D2D5DA",
+    "labelX": -660,
+    "labelY": -360,
+    "labelWidth": 235,
+    "transdirectional": false
+  },
+  {
+    "id": 5,
+    "label": "Hacktivisme géopolitique",
+    "color": "#D4D8DD",
+    "labelX": -110,
+    "labelY": 880,
+    "labelWidth": 190,
     "transdirectional": false
   }
 ]
