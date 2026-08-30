@@ -173,8 +173,8 @@ export default function ExpertiseConstellation({
   const view = useMemo(() => {
     const width = Math.max(1, bounds.maxX - bounds.minX)
     const height = Math.max(1, bounds.maxY - bounds.minY)
-    const padX = width * 0.08
-    const padY = height * 0.09
+    const padX = width * 0.02
+    const padY = height * 0.02
 
     return {
       x: bounds.minX - padX,
@@ -441,7 +441,7 @@ export default function ExpertiseConstellation({
                   }
                   opacity={
                     selectedActive && clusterActive
-                      ? (sameCluster ? 0.33 : 0.08) * linkDensity
+                      ? (sameCluster ? 0.31 : 0.045) * linkDensity
                       : 0.028
                   }
                 />
@@ -469,7 +469,7 @@ export default function ExpertiseConstellation({
                   : cluster?.color || DEFAULT_CLUSTER_COLOR
 
               const radius =
-                Math.max(13, 10 + node.gephiSize * 1.12) *
+                Math.max(15, 11.5 + node.gephiSize * 1.30) *
                 nodeSize
 
               return (
@@ -586,7 +586,7 @@ export default function ExpertiseConstellation({
       <style>{`
         .gephi-entry-shell{
           position:relative;
-          min-height:620px;
+          min-height:650px;
           overflow:hidden;
           border-radius:18px;
           background:
@@ -597,7 +597,7 @@ export default function ExpertiseConstellation({
         .gephi-entry-svg{
           display:block;
           width:100%;
-          height:620px;
+          height:clamp(650px,72vh,760px);
           touch-action:none;
           user-select:none;
           cursor:grab;
@@ -780,33 +780,96 @@ export default function ExpertiseConstellation({
         }
 
         .entry-cluster-card strong{
-          font-size:15px;
-          line-height:1.12;
+          font-size:22px;
+          line-height:1.08;
           font-weight:860;
           letter-spacing:-.15px;
         }
 
         .entry-cluster-card span{
           color:#6b7b91;
-          font-size:10.5px;
-          line-height:1.1;
+          font-size:13px;
+          line-height:1.12;
           font-style:italic;
           font-weight:680;
         }
 
+
+        /* ONGLET 1 — entrée immersive : priorité visuelle au graphe */
+        .expertise-screen>.graph-workspace{
+          padding:14px 18px 10px!important;
+        }
+
+        .expertise-screen .expertise-transition-banner{
+          grid-template-columns:minmax(0,1fr) 190px!important;
+          gap:14px!important;
+          margin:0 0 10px!important;
+          padding:11px 16px!important;
+          min-height:0!important;
+          border-radius:12px!important;
+        }
+
+        .expertise-screen .expertise-transition-kicker{
+          margin:0 0 4px!important;
+          font-size:9px!important;
+        }
+
+        .expertise-screen .expertise-transition-copy h2{
+          margin:0 0 4px!important;
+          font-size:21px!important;
+          line-height:1.08!important;
+        }
+
+        .expertise-screen .expertise-transition-copy p{
+          max-width:900px!important;
+          font-size:12.5px!important;
+          line-height:1.35!important;
+        }
+
+        .expertise-screen .expertise-transition-art{
+          height:72px!important;
+        }
+
+        .expertise-screen .expertise-transition-art img{
+          max-width:240px!important;
+        }
+
+        .expertise-screen .workspace-toolbar{
+          margin-bottom:2px!important;
+        }
+
+        .expertise-screen .workspace-toolbar h1{
+          font-size:26px!important;
+          margin-bottom:4px!important;
+        }
+
+        .expertise-screen .workspace-subtitle{
+          margin-bottom:5px!important;
+        }
+
+        @media(max-width:1180px){
+          .expertise-screen .expertise-transition-banner{
+            grid-template-columns:minmax(0,1fr) 150px!important;
+          }
+          .expertise-screen .expertise-transition-art{
+            height:62px!important;
+            justify-content:flex-end!important;
+          }
+        }
+
         @media(max-width:1380px){
           .gephi-entry-svg{
-            height:560px;
+            height:650px;
           }
 
           .entry-cluster-card strong{
-            font-size:14px;
+            font-size:19px;
           }
         }
 
         @media(max-width:820px){
           .gephi-entry-svg{
-            height:500px;
+            height:540px;
           }
 
           .gephi-view-switch{
@@ -819,11 +882,11 @@ export default function ExpertiseConstellation({
           }
 
           .entry-cluster-card strong{
-            font-size:13px;
+            font-size:16px;
           }
 
           .entry-cluster-card span{
-            font-size:9px;
+            font-size:10px;
           }
         }
       `}</style>
