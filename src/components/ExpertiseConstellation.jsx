@@ -10,7 +10,7 @@ const FAMILY_COLORS = {
   'Problème public': '#14af75',
 }
 
-const DEFAULT_CLUSTER_COLOR = '#94a3b8'
+const DEFAULT_CLUSTER_COLOR = '#cfd5dd'
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
@@ -21,12 +21,6 @@ function nodeScore(node) {
   return Number(layout?.size || 0)
 }
 
-/**
- * Conserve le comportement attendu par Expertises.jsx :
- * - vue globale plafonnée ;
- * - au moins un nœud de chaque cluster visible ;
- * - priorité aux nœuds les plus structurants selon la taille Gephi.
- */
 export function selectOverviewExpertises(nodes, limit = 80) {
   const eligible = (nodes || []).filter(node => expertiseGephiLayout[node.id])
 
@@ -41,7 +35,6 @@ export function selectOverviewExpertises(nodes, limit = 80) {
 
   for (const node of sorted) {
     const cluster = expertiseGephiLayout[node.id]?.cluster
-
     if (!representedClusters.has(cluster)) {
       representedClusters.add(cluster)
       selectedIds.add(node.id)
@@ -52,7 +45,6 @@ export function selectOverviewExpertises(nodes, limit = 80) {
   for (const node of sorted) {
     if (selected.length >= limit) break
     if (selectedIds.has(node.id)) continue
-
     selectedIds.add(node.id)
     selected.push(node)
   }
@@ -60,14 +52,13 @@ export function selectOverviewExpertises(nodes, limit = 80) {
   return selected
 }
 
-function wrapLabel(label, maxChars = 34) {
+function wrapLabel(label, maxChars = 32) {
   const words = String(label || '').split(/\s+/).filter(Boolean)
   const lines = []
   let current = ''
 
   words.forEach(word => {
     const next = current ? `${current} ${word}` : word
-
     if (next.length > maxChars && current) {
       lines.push(current)
       current = word
@@ -78,14 +69,6 @@ function wrapLabel(label, maxChars = 34) {
 
   if (current) lines.push(current)
   return lines.slice(0, 3)
-}
-
-function displayPoint(layout) {
-  return {
-    x: layout.x,
-    // Gephi utilise un axe vertical opposé à celui du SVG.
-    y: -layout.y,
-  }
 }
 
 function familyColor(family) {
@@ -134,12 +117,10 @@ export default function ExpertiseConstellation({
         .map(node => {
           const layout = expertiseGephiLayout[node.id]
           if (!layout) return null
-
-          const point = displayPoint(layout)
-
           return {
             ...node,
-            ...point,
+            x: layout.x,
+            y: layout.y,
             gephiSize: layout.size,
             clusterId: layout.cluster,
           }
@@ -162,20 +143,24 @@ export default function ExpertiseConstellation({
   )
 
   const bounds = useMemo(() => {
-    if (!positionedNodes.length) {
-      return { minX: -700, maxX: 850, minY: -950, maxY: 650 }
-    }
+    const xs = []
+    const ys = []
 
-    const xs = positionedNodes.map(node => node.x)
-    const ys = positionedNodes.map(node => node.y)
+    positionedNodes.forEach(node => {
+      xs.push(node.x)
+      ys.push(node.y)
+    })
 
-    // Les titres font partie de l'espace utile de la carte.
     expertiseClusters.forEach(cluster => {
       if (positionedNodes.some(node => node.clusterId === cluster.id)) {
         xs.push(cluster.labelX)
         ys.push(cluster.labelY)
       }
     })
+
+    if (!xs.length) {
+      return { minX: -900, maxX: 900, minY: -650, maxY: 950 }
+    }
 
     return {
       minX: Math.min(...xs),
@@ -189,7 +174,7 @@ export default function ExpertiseConstellation({
     const width = Math.max(1, bounds.maxX - bounds.minX)
     const height = Math.max(1, bounds.maxY - bounds.minY)
     const padX = width * 0.08
-    const padY = height * 0.08
+    const padY = height * 0.09
 
     return {
       x: bounds.minX - padX,
@@ -221,20 +206,10 @@ export default function ExpertiseConstellation({
       .filter(cluster => grouped.has(cluster.id))
       .map(cluster => {
         const clusterNodes = grouped.get(cluster.id)
-        const xs = clusterNodes.map(node => node.x)
-        const ys = clusterNodes.map(node => node.y)
-
-        const minX = Math.min(...xs)
-        const maxX = Math.max(...xs)
-        const minY = Math.min(...ys)
-        const maxY = Math.max(...ys)
-
         return {
           ...cluster,
           nodeIds: new Set(clusterNodes.map(node => node.id)),
-          centerX: (minX + maxX) / 2,
-          centerY: (minY + maxY) / 2,
-          radius: 42 + Math.sqrt(clusterNodes.length) * 18,
+          radius: 92 + Math.sqrt(clusterNodes.length) * 26,
         }
       })
   }, [positionedNodes])
@@ -243,7 +218,6 @@ export default function ExpertiseConstellation({
 
   const neighbourIds = useMemo(() => {
     if (!selectedId) return new Set()
-
     const ids = new Set([selectedId])
 
     visibleEdges.forEach(edge => {
@@ -268,7 +242,7 @@ export default function ExpertiseConstellation({
   }, [fitToken])
 
   const zoom = factor => {
-    setScale(current => clamp(current * factor, 0.65, 3))
+    setScale(current => clamp(current * factor, 0.72, 3))
   }
 
   const resetView = () => {
@@ -318,7 +292,6 @@ export default function ExpertiseConstellation({
   const endDrag = event => {
     const drag = dragRef.current
     if (!drag || drag.pointerId !== event.pointerId) return
-
     dragRef.current = null
     event.currentTarget.releasePointerCapture?.(event.pointerId)
   }
@@ -335,7 +308,7 @@ export default function ExpertiseConstellation({
     : hoveredNode
 
   return (
-    <section className="constellation-shell gephi-expertise-shell">
+    <section className="constellation-shell gephi-entry-shell">
       <div className="gephi-view-switch" aria-label="Mode de lecture du graphe">
         <button
           type="button"
@@ -361,15 +334,9 @@ export default function ExpertiseConstellation({
       </div>
 
       <div className="gephi-zoom-tools" aria-label="Zoom du graphe">
-        <button type="button" onClick={() => zoom(1.18)} aria-label="Zoom avant">
-          +
-        </button>
-        <button type="button" onClick={() => zoom(0.85)} aria-label="Zoom arrière">
-          −
-        </button>
-        <button type="button" onClick={resetView} aria-label="Recentrer">
-          ⌾
-        </button>
+        <button type="button" onClick={() => zoom(1.18)} aria-label="Zoom avant">+</button>
+        <button type="button" onClick={() => zoom(0.86)} aria-label="Zoom arrière">−</button>
+        <button type="button" onClick={resetView} aria-label="Recentrer">⌾</button>
       </div>
 
       {activeCluster !== null && mode === 'cluster' && (
@@ -384,7 +351,7 @@ export default function ExpertiseConstellation({
 
       <svg
         ref={svgRef}
-        className="gephi-expertise-svg"
+        className="gephi-entry-svg"
         viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
         role="img"
         aria-label="Carte des expertises ministérielles"
@@ -398,15 +365,23 @@ export default function ExpertiseConstellation({
         }}
       >
         <defs>
-          <filter id="cluster-blur">
-            <feGaussianBlur stdDeviation="24" />
+          <filter id="cluster-blur-entry">
+            <feGaussianBlur stdDeviation="34" />
           </filter>
         </defs>
 
         <g transform={zoomTransform}>
           {mode === 'cluster' && (
-            <g className="gephi-cluster-halos" aria-hidden="true">
+            <g className="entry-cluster-halos" aria-hidden="true">
               {clusterStats.map(cluster => {
+                const clusterNodes = positionedNodes.filter(
+                  node => node.clusterId === cluster.id
+                )
+                const xs = clusterNodes.map(node => node.x)
+                const ys = clusterNodes.map(node => node.y)
+                const cx = (Math.min(...xs) + Math.max(...xs)) / 2
+                const cy = (Math.min(...ys) + Math.max(...ys)) / 2
+
                 const dim =
                   activeCluster !== null &&
                   activeCluster !== cluster.id
@@ -414,19 +389,19 @@ export default function ExpertiseConstellation({
                 return (
                   <circle
                     key={`halo-${cluster.id}`}
-                    cx={cluster.centerX}
-                    cy={cluster.centerY}
+                    cx={cx}
+                    cy={cy}
                     r={cluster.radius}
                     fill={cluster.color || DEFAULT_CLUSTER_COLOR}
-                    opacity={dim ? 0.025 : 0.11}
-                    filter="url(#cluster-blur)"
+                    opacity={dim ? 0.03 : 0.19}
+                    filter="url(#cluster-blur-entry)"
                   />
                 )
               })}
             </g>
           )}
 
-          <g className="gephi-edges">
+          <g className="entry-edges">
             {visibleEdges.map((edge, index) => {
               const source = byId.get(edge.source)
               const target = byId.get(edge.target)
@@ -446,6 +421,8 @@ export default function ExpertiseConstellation({
                   target.clusterId === activeCluster
                 )
 
+              const sameCluster = source.clusterId === target.clusterId
+
               return (
                 <line
                   key={`${edge.source}-${edge.target}-${index}`}
@@ -459,23 +436,22 @@ export default function ExpertiseConstellation({
                       edge.source === selectedId ||
                       edge.target === selectedId
                     )
-                      ? 'gephi-edge active'
-                      : 'gephi-edge'
+                      ? 'entry-edge active'
+                      : 'entry-edge'
                   }
                   opacity={
                     selectedActive && clusterActive
-                      ? 0.34 * linkDensity
-                      : 0.045
+                      ? (sameCluster ? 0.33 : 0.08) * linkDensity
+                      : 0.028
                   }
                 />
               )
             })}
           </g>
 
-          <g className="gephi-nodes">
+          <g className="entry-nodes">
             {positionedNodes.map(node => {
               const isSelected = selectedId === node.id
-
               const selectedActive =
                 !selectedId || neighbourIds.has(node.id)
 
@@ -493,7 +469,7 @@ export default function ExpertiseConstellation({
                   : cluster?.color || DEFAULT_CLUSTER_COLOR
 
               const radius =
-                Math.max(11, 8.5 + node.gephiSize * 0.85) *
+                Math.max(13, 10 + node.gephiSize * 1.12) *
                 nodeSize
 
               return (
@@ -506,7 +482,7 @@ export default function ExpertiseConstellation({
                     className="node-hit-target"
                     cx={node.x}
                     cy={node.y}
-                    r={radius + 5}
+                    r={radius + 7}
                     fill="transparent"
                     onMouseEnter={() => setHoveredId(node.id)}
                     onMouseLeave={() => setHoveredId(null)}
@@ -524,10 +500,10 @@ export default function ExpertiseConstellation({
                     r={radius}
                     fill={fill}
                     stroke={isSelected ? '#0b2545' : '#ffffff'}
-                    strokeWidth={isSelected ? 4 : 1.4}
+                    strokeWidth={isSelected ? 4.2 : 1.65}
                     opacity={
                       selectedActive && clusterActive
-                        ? 0.96
+                        ? 0.97
                         : 0.13
                     }
                     pointerEvents="none"
@@ -538,93 +514,55 @@ export default function ExpertiseConstellation({
           </g>
 
           {mode === 'cluster' && (
-            <g className="gephi-cluster-labels">
+            <g className="entry-cluster-labels">
               {clusterStats.map(cluster => {
-                const lines = wrapLabel(cluster.label)
-                const lineHeight = 22
-                const totalHeight =
-                  (lines.length - 1) * lineHeight
-
                 const dim =
                   activeCluster !== null &&
                   activeCluster !== cluster.id
 
+                const width = cluster.labelWidth || 240
+                const height = cluster.transdirectional ? 84 : 62
+
                 return (
-                  <g
+                  <foreignObject
                     key={`label-${cluster.id}`}
-                    className="gephi-cluster-label"
-                    opacity={dim ? 0.18 : 1}
-                    role="button"
-                    tabIndex="0"
-                    aria-label={
-                      cluster.transdirectional
-                        ? `${cluster.label}, Cluster transdirectionnel`
-                        : cluster.label
-                    }
+                    x={cluster.labelX - width / 2}
+                    y={cluster.labelY - height / 2}
+                    width={width}
+                    height={height}
+                    opacity={dim ? 0.22 : 1}
                     onPointerDown={event => event.stopPropagation()}
-                    onClick={() =>
-                      setActiveCluster(current =>
-                        current === cluster.id
-                          ? null
-                          : cluster.id
-                      )
-                    }
-                    onKeyDown={event => {
-                      if (
-                        event.key === 'Enter' ||
-                        event.key === ' '
-                      ) {
-                        event.preventDefault()
+                  >
+                    <button
+                      type="button"
+                      className="entry-cluster-card"
+                      aria-label={
+                        cluster.transdirectional
+                          ? `${cluster.label}, Cluster transdirectionnel`
+                          : cluster.label
+                      }
+                      onClick={() =>
                         setActiveCluster(current =>
-                          current === cluster.id
-                            ? null
-                            : cluster.id
+                          current === cluster.id ? null : cluster.id
                         )
                       }
-                    }}
-                  >
-                    <text
-                      x={cluster.labelX}
-                      y={cluster.labelY - totalHeight / 2}
-                      textAnchor="middle"
-                      className="cluster-name"
                     >
-                      {lines.map((line, index) => (
-                        <tspan
-                          key={line}
-                          x={cluster.labelX}
-                          dy={index === 0 ? 0 : lineHeight}
-                        >
-                          {line}
-                        </tspan>
-                      ))}
-                    </text>
-
-                    {cluster.transdirectional && (
-                      <text
-                        x={cluster.labelX}
-                        y={
-                          cluster.labelY +
-                          totalHeight / 2 +
-                          25
-                        }
-                        textAnchor="middle"
-                        className="cluster-transdirectional"
-                      >
-                        Cluster transdirectionnel
-                      </text>
-                    )}
-                  </g>
+                      <strong>{cluster.label}</strong>
+                      {cluster.transdirectional && (
+                        <span>Cluster transdirectionnel</span>
+                      )}
+                    </button>
+                  </foreignObject>
                 )
               })}
             </g>
           )}
 
           {labelNode && (
-            <g className="gephi-node-label" pointerEvents="none">
+            <g className="entry-node-label" pointerEvents="none">
               <text
-                x={labelNode.x + 13}
-                y={labelNode.y - 13}
+                x={labelNode.x + 16}
+                y={labelNode.y - 15}
                 textAnchor="start"
               >
                 {labelNode.label}
@@ -635,7 +573,7 @@ export default function ExpertiseConstellation({
       </svg>
 
       {mode === 'category' && (
-        <div className="gephi-family-legend" aria-label="Catégories d’expertise">
+        <div className="entry-family-legend" aria-label="Catégories d’expertise">
           {Object.entries(FAMILY_COLORS).map(([label, color]) => (
             <span key={label}>
               <i style={{ background: color }} />
@@ -646,39 +584,39 @@ export default function ExpertiseConstellation({
       )}
 
       <style>{`
-        .gephi-expertise-shell{
+        .gephi-entry-shell{
           position:relative;
-          min-height:520px;
+          min-height:620px;
           overflow:hidden;
-          border-radius:14px;
+          border-radius:18px;
           background:
-            radial-gradient(circle at 50% 42%,rgba(240,245,252,.85),rgba(255,255,255,0) 46%),
-            #fff;
+            radial-gradient(circle at 50% 40%,rgba(241,245,251,.92),rgba(255,255,255,0) 44%),
+            linear-gradient(180deg,#ffffff 0%,#fbfcfe 100%);
         }
 
-        .gephi-expertise-svg{
+        .gephi-entry-svg{
           display:block;
           width:100%;
-          height:560px;
+          height:620px;
           touch-action:none;
           user-select:none;
           cursor:grab;
         }
 
-        .gephi-expertise-svg:active{
+        .gephi-entry-svg:active{
           cursor:grabbing;
         }
 
-        .gephi-edge{
-          stroke:#9eafc7;
-          stroke-width:1.55;
+        .entry-edge{
+          stroke:#a9b6c7;
+          stroke-width:1.45;
           stroke-linecap:round;
           vector-effect:non-scaling-stroke;
         }
 
-        .gephi-edge.active{
+        .entry-edge.active{
           stroke:#f39a00;
-          stroke-width:2.8;
+          stroke-width:3;
         }
 
         .gephi-view-switch{
@@ -691,7 +629,7 @@ export default function ExpertiseConstellation({
           padding:4px;
           border:1px solid #dbe4f0;
           border-radius:10px;
-          background:rgba(255,255,255,.94);
+          background:rgba(255,255,255,.95);
           box-shadow:0 4px 14px rgba(15,46,85,.07);
         }
 
@@ -719,14 +657,14 @@ export default function ExpertiseConstellation({
           flex-direction:column;
           overflow:hidden;
           border:1px solid #dbe4f0;
-          border-radius:9px;
+          border-radius:10px;
           background:#fff;
           box-shadow:0 4px 14px rgba(15,46,85,.07);
         }
 
         .gephi-zoom-tools button{
-          width:38px;
-          height:36px;
+          width:42px;
+          height:39px;
           border:0;
           border-bottom:1px solid #e5ebf3;
           background:#fff;
@@ -753,35 +691,35 @@ export default function ExpertiseConstellation({
           cursor:pointer;
         }
 
-        .gephi-cluster-label{
+        .entry-cluster-label{
           cursor:pointer;
           outline:none;
         }
 
-        .gephi-cluster-label .cluster-name{
+        .entry-cluster-name{
           fill:#203653;
-          font-size:17px;
-          font-weight:850;
+          font-size:19px;
+          font-weight:860;
           letter-spacing:-.2px;
           paint-order:stroke;
-          stroke:#fff;
+          stroke:#ffffff;
           stroke-width:5px;
           stroke-linejoin:round;
           pointer-events:none;
         }
 
-        .cluster-transdirectional{
+        .entry-cluster-transdirectional{
           fill:#6b7b91;
-          font-size:11px;
+          font-size:12px;
           font-style:italic;
-          font-weight:650;
+          font-weight:680;
           paint-order:stroke;
-          stroke:#fff;
+          stroke:#ffffff;
           stroke-width:4px;
           pointer-events:none;
         }
 
-        .gephi-node-label text{
+        .entry-node-label text{
           fill:#142d52;
           font-size:12px;
           font-weight:800;
@@ -791,16 +729,16 @@ export default function ExpertiseConstellation({
           stroke-linejoin:round;
         }
 
-        .gephi-family-legend{
+        .entry-family-legend{
           position:absolute;
           z-index:6;
           left:14px;
           bottom:14px;
           display:flex;
           flex-wrap:wrap;
-          gap:7px 12px;
-          max-width:70%;
-          padding:7px 10px;
+          gap:8px 12px;
+          max-width:72%;
+          padding:8px 11px;
           border:1px solid #dbe4f0;
           border-radius:9px;
           background:rgba(255,255,255,.94);
@@ -809,35 +747,66 @@ export default function ExpertiseConstellation({
           font-weight:700;
         }
 
-        .gephi-family-legend span{
+        .entry-family-legend span{
           display:flex;
           align-items:center;
           gap:5px;
         }
 
-        .gephi-family-legend i{
-          width:8px;
-          height:8px;
+        .entry-family-legend i{
+          width:9px;
+          height:9px;
           border-radius:50%;
         }
 
+
+        .entry-cluster-card{
+          width:100%;
+          height:100%;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:center;
+          gap:4px;
+          padding:7px 10px;
+          border:0;
+          border-radius:0;
+          background:transparent;
+          box-shadow:none;
+          color:#203653;
+          font-family:inherit;
+          text-align:center;
+          cursor:pointer;
+        }
+
+        .entry-cluster-card strong{
+          font-size:15px;
+          line-height:1.12;
+          font-weight:860;
+          letter-spacing:-.15px;
+        }
+
+        .entry-cluster-card span{
+          color:#6b7b91;
+          font-size:10.5px;
+          line-height:1.1;
+          font-style:italic;
+          font-weight:680;
+        }
+
         @media(max-width:1380px){
-          .gephi-expertise-svg{
-            height:500px;
+          .gephi-entry-svg{
+            height:560px;
           }
 
-          .gephi-cluster-label .cluster-name{
-            font-size:15px;
-          }
-
-          .cluster-transdirectional{
-            font-size:10px;
+          .entry-cluster-card strong{
+            font-size:14px;
           }
         }
 
         @media(max-width:820px){
-          .gephi-expertise-svg{
-            height:460px;
+          .gephi-entry-svg{
+            height:500px;
           }
 
           .gephi-view-switch{
@@ -849,12 +818,12 @@ export default function ExpertiseConstellation({
             font-size:9px;
           }
 
-          .gephi-cluster-label .cluster-name{
-            font-size:14px;
+          .entry-cluster-card strong{
+            font-size:13px;
           }
 
-          .gephi-family-legend{
-            max-width:78%;
+          .entry-cluster-card span{
+            font-size:9px;
           }
         }
       `}</style>
