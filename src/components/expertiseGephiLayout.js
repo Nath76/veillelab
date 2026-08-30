@@ -1,8 +1,7 @@
 // QUIRITÈS VEILLE LAB — ONGLET 1
-// VERSION ENTRÉE IMMERSIVE — 30 août 2026
-// Transformation strictement visuelle : format paysage pour utiliser l'espace écran.
-// Aucun nœud, lien, cluster ou rattachement sémantique n'est ajouté/modifié.
-// ME113 — Socialisations numériques reste exclu.
+// CORRECTION CIBLÉE — 31 août 2026
+// Aucun nœud, lien ou rattachement de cluster n'est modifié.
+// Seuls les positions/taille des titres et réglages d'affichage évoluent.
 
 export const expertiseGephiLayout = {
   "ME084": {
@@ -665,107 +664,107 @@ export const expertiseClusters = [
   {
     "id": 11,
     "label": "Méthodes d’analyse et recherche appliquée",
-    "color": "#99C93C",
-    "labelX": -370,
-    "labelY": -141.2,
+    "color": "#97C53D",
+    "labelX": -382,
+    "labelY": -153.2,
     "labelWidth": 260,
     "transdirectional": true
   },
   {
     "id": 3,
     "label": "Observation et analyse des phénomènes de sécurité",
-    "color": "#D68AF2",
-    "labelX": 25,
-    "labelY": -35.2,
+    "color": "#C975E6",
+    "labelX": 39,
+    "labelY": -41.2,
     "labelWidth": 255,
     "transdirectional": false
   },
   {
     "id": 8,
     "label": "Méthodes d’analyse des phénomènes pénaux",
-    "color": "#F4A33C",
-    "labelX": 385,
-    "labelY": -35.6,
-    "labelWidth": 245,
+    "color": "#F1A43A",
+    "labelX": 403,
+    "labelY": -31.6,
+    "labelWidth": 250,
     "transdirectional": false
   },
   {
     "id": 10,
     "label": "Transformation de l’action publique face aux risques et crises",
-    "color": "#7ED6FF",
+    "color": "#78CFFF",
     "labelX": 160,
-    "labelY": -297.6,
+    "labelY": -305.6,
     "labelWidth": 285,
     "transdirectional": false
   },
   {
     "id": 14,
     "label": "Valorisation et transmission des métiers et savoir-faire opérationnels",
-    "color": "#5C544C",
-    "labelX": -150,
-    "labelY": 409.6,
+    "color": "#5A5249",
+    "labelX": -158,
+    "labelY": 421.6,
     "labelWidth": 305,
     "transdirectional": true
   },
   {
     "id": 6,
     "label": "Innovations et technologies",
-    "color": "#F46D8C",
-    "labelX": -300,
-    "labelY": -401.6,
-    "labelWidth": 230,
+    "color": "#F26E8C",
+    "labelX": -296,
+    "labelY": -367.6,
+    "labelWidth": 250,
     "transdirectional": false
   },
   {
     "id": 2,
     "label": "Radicalités violentes",
-    "color": "#12AF92",
-    "labelX": 570,
-    "labelY": -224.0,
-    "labelWidth": 190,
+    "color": "#16B79C",
+    "labelX": 564,
+    "labelY": -228.0,
+    "labelWidth": 250,
     "transdirectional": false
   },
   {
     "id": 12,
     "label": "Anticipation des menaces cyber et technologiques",
-    "color": "#E6C8C8",
-    "labelX": 500,
-    "labelY": 414.8,
+    "color": "#D8B6B6",
+    "labelX": 488,
+    "labelY": 420.8,
     "labelWidth": 255,
     "transdirectional": false
   },
   {
     "id": 15,
     "label": "Commandement et professionnalisation des cadres policiers",
-    "color": "#D8DADF",
-    "labelX": 575,
-    "labelY": 299.2,
+    "color": "#E2A760",
+    "labelX": 570,
+    "labelY": 291.2,
     "labelWidth": 285,
     "transdirectional": false
   },
   {
     "id": 7,
     "label": "Investigations et innovation subaquatiques",
-    "color": "#D7DBE0",
-    "labelX": 790,
+    "color": "#BFC6D2",
+    "labelX": 693,
     "labelY": 3.6,
-    "labelWidth": 245,
+    "labelWidth": 250,
     "transdirectional": false
   },
   {
     "id": 4,
     "label": "Cybercriminalité",
-    "color": "#BCC5D0",
-    "labelX": -655,
-    "labelY": 299.2,
-    "labelWidth": 185,
+    "color": "#4DA8C7",
+    "labelX": -597,
+    "labelY": 285.2,
+    "labelWidth": 250,
     "transdirectional": false
   },
   {
     "id": 0,
     "label": "Suivi et gestion des populations étrangères",
-    "color": "#C7CDD6",
-    "labelX": -680,
+    "color": "#6E95D5",
+    "labelX": -630,
     "labelY": 50.8,
     "labelWidth": 250,
     "transdirectional": false
@@ -773,28 +772,28 @@ export const expertiseClusters = [
   {
     "id": 1,
     "label": "Protection des élus et suivi des atteintes",
-    "color": "#D0D5DC",
-    "labelX": -665,
-    "labelY": -176.4,
-    "labelWidth": 235,
+    "color": "#8898D9",
+    "labelX": -647,
+    "labelY": -164.4,
+    "labelWidth": 250,
     "transdirectional": false
   },
   {
     "id": 13,
     "label": "Stratégies informationnelles et influence",
-    "color": "#D2D5DA",
-    "labelX": -665,
-    "labelY": -265.2,
-    "labelWidth": 235,
+    "color": "#5B6FCF",
+    "labelX": -594,
+    "labelY": -311.2,
+    "labelWidth": 250,
     "transdirectional": false
   },
   {
     "id": 5,
     "label": "Hacktivisme géopolitique",
-    "color": "#D4D8DD",
+    "color": "#B58AC8",
     "labelX": -110,
-    "labelY": 645.6,
-    "labelWidth": 190,
+    "labelY": 603.6,
+    "labelWidth": 250,
     "transdirectional": false
   }
 ]
