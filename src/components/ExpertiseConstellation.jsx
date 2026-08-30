@@ -153,8 +153,13 @@ export default function ExpertiseConstellation({
 
     expertiseClusters.forEach(cluster => {
       if (positionedNodes.some(node => node.clusterId === cluster.id)) {
-        xs.push(cluster.labelX)
-        ys.push(cluster.labelY)
+        const labelHalfWidth = (cluster.labelWidth || 240) / 2
+        const labelHalfHeight = cluster.transdirectional ? 54 : 42
+
+        xs.push(cluster.labelX - labelHalfWidth)
+        xs.push(cluster.labelX + labelHalfWidth)
+        ys.push(cluster.labelY - labelHalfHeight)
+        ys.push(cluster.labelY + labelHalfHeight)
       }
     })
 
@@ -173,8 +178,8 @@ export default function ExpertiseConstellation({
   const view = useMemo(() => {
     const width = Math.max(1, bounds.maxX - bounds.minX)
     const height = Math.max(1, bounds.maxY - bounds.minY)
-    const padX = width * 0.02
-    const padY = height * 0.02
+    const padX = width * 0.035
+    const padY = height * 0.04
 
     return {
       x: bounds.minX - padX,
@@ -206,9 +211,18 @@ export default function ExpertiseConstellation({
       .filter(cluster => grouped.has(cluster.id))
       .map(cluster => {
         const clusterNodes = grouped.get(cluster.id)
+        const xs = clusterNodes.map(node => node.x)
+        const ys = clusterNodes.map(node => node.y)
+
         return {
           ...cluster,
           nodeIds: new Set(clusterNodes.map(node => node.id)),
+          minX: Math.min(...xs),
+          maxX: Math.max(...xs),
+          minY: Math.min(...ys),
+          maxY: Math.max(...ys),
+          centerX: (Math.min(...xs) + Math.max(...xs)) / 2,
+          centerY: (Math.min(...ys) + Math.max(...ys)) / 2,
           radius: 92 + Math.sqrt(clusterNodes.length) * 26,
         }
       })
@@ -249,6 +263,105 @@ export default function ExpertiseConstellation({
     setScale(1)
     setPan({ x: 0, y: 0 })
   }
+
+  const closeCluster = () => {
+    setActiveCluster(null)
+    onSelect?.(null)
+    setScale(1)
+    setPan({ x: 0, y: 0 })
+  }
+
+  const focusCluster = cluster => {
+    if (!cluster) return
+
+    if (activeCluster === cluster.id) {
+      closeCluster()
+      return
+    }
+
+    // A cluster focus must not inherit a previous node selection.
+    onSelect?.(null)
+    setActiveCluster(cluster.id)
+
+    const clusterNodes = positionedNodes.filter(
+      node => node.clusterId === cluster.id
+    )
+
+    if (!clusterNodes.length) return
+
+    const xs = clusterNodes.map(node => node.x)
+    const ys = clusterNodes.map(node => node.y)
+    const centerX = (Math.min(...xs) + Math.max(...xs)) / 2
+    const centerY = (Math.min(...ys) + Math.max(...ys)) / 2
+
+    const nextScale = clusterNodes.length >= 12 ? 1.55 : 1.85
+    setScale(nextScale)
+    setPan({
+      x: nextScale * (viewCenter.x - centerX),
+      y: nextScale * (viewCenter.y - centerY),
+    })
+  }
+
+  const activeNodeLabels = useMemo(() => {
+    if (activeCluster === null) return []
+
+    const cluster = clusterStats.find(item => item.id === activeCluster)
+    if (!cluster) return []
+
+    const clusterNodes = positionedNodes.filter(
+      node => node.clusterId === activeCluster
+    )
+
+    const left = clusterNodes
+      .filter(node => node.x < cluster.centerX)
+      .sort((a, b) => a.y - b.y)
+
+    const right = clusterNodes
+      .filter(node => node.x >= cluster.centerX)
+      .sort((a, b) => a.y - b.y)
+
+    const distribute = (items, side) => {
+      if (!items.length) return []
+
+      const gap = 45
+      const original = items.map(node => node.y)
+      const placed = []
+
+      items.forEach((node, index) => {
+        const wanted = node.y
+        const y =
+          index === 0
+            ? wanted
+            : Math.max(wanted, placed[index - 1].y + gap)
+
+        placed.push({ node, y })
+      })
+
+      const avgOriginal =
+        original.reduce((sum, value) => sum + value, 0) / original.length
+
+      const avgPlaced =
+        placed.reduce((sum, item) => sum + item.y, 0) / placed.length
+
+      const shift = avgOriginal - avgPlaced
+      const x =
+        side === 'left'
+          ? cluster.minX - 58
+          : cluster.maxX + 58
+
+      return placed.map(item => ({
+        node: item.node,
+        x,
+        y: item.y + shift,
+        side,
+      }))
+    }
+
+    return [
+      ...distribute(left, 'left'),
+      ...distribute(right, 'right'),
+    ]
+  }, [activeCluster, clusterStats, positionedNodes])
 
   const onPointerDown = event => {
     if (event.button !== 0) return
@@ -313,33 +426,31 @@ export default function ExpertiseConstellation({
     const allEls = Array.from(document.querySelectorAll('aside h1, aside h2, aside h3, aside p, aside a, .expertise-sidebar h1, .expertise-sidebar h2, .expertise-sidebar h3, .expertise-sidebar p, .expertise-sidebar a'))
     const titleEl = allEls.find(el => (el.textContent || '').trim() === 'Pourquoi cette carte ?')
     if (titleEl) {
-      titleEl.textContent = 'EXPERTISES MINISTÉRIELLES'
-      titleEl.style.fontSize = '12px'
-      titleEl.style.fontWeight = '800'
-      titleEl.style.letterSpacing = '0.08em'
-      titleEl.style.textTransform = 'uppercase'
-      titleEl.style.color = '#295187'
+      // On retire uniquement le petit sur-titre.
+      titleEl.style.display = 'none'
 
       const siblings = Array.from(titleEl.parentElement ? titleEl.parentElement.children : [])
       const firstParagraph = siblings.find(el => /^Les publications du ministère/i.test((el.textContent || '').trim()))
       if (firstParagraph) {
         firstParagraph.textContent = 'Des publications aux savoir-faire du ministère'
-        firstParagraph.style.fontSize = '24px'
-        firstParagraph.style.lineHeight = '1.08'
+        firstParagraph.style.fontSize = '21px'
+        firstParagraph.style.lineHeight = '1.12'
         firstParagraph.style.fontWeight = '800'
         firstParagraph.style.color = '#14345d'
-        firstParagraph.style.marginTop = '6px'
-        firstParagraph.style.marginBottom = '8px'
+        firstParagraph.style.marginTop = '0'
+        firstParagraph.style.marginBottom = '10px'
       }
 
-      // Hide the other explanatory paragraphs/links to free space
+      // On conserve le lien d'introduction et les contrôles de la page.
       siblings.forEach(el => {
         if (el !== titleEl && el !== firstParagraph) {
           const txt = (el.textContent || '').trim()
-          if (txt && !/rechercher|afficher|entité|type d’expertise/i.test(txt)) {
-            if (el.tagName.toLowerCase() === 'p' || el.tagName.toLowerCase() === 'a') {
-              el.style.display = 'none'
-            }
+          if (
+            el.tagName.toLowerCase() === 'p' &&
+            txt &&
+            !/lire l’introduction complète|lire l'introduction complète/i.test(txt)
+          ) {
+            el.style.display = 'none'
           }
         }
       })
@@ -387,7 +498,7 @@ export default function ExpertiseConstellation({
         <button
           type="button"
           className="gephi-back-cluster"
-          onClick={() => setActiveCluster(null)}
+          onClick={closeCluster}
         >
           Retour à la carte complète
         </button>
@@ -415,7 +526,7 @@ export default function ExpertiseConstellation({
         </defs>
 
         <g transform={zoomTransform}>
-          {mode === 'cluster' && (
+          {(mode === 'cluster' || mode === 'category') && (
             <g className="entry-cluster-halos" aria-hidden="true">
               {clusterStats.map(cluster => {
                 const clusterNodes = positionedNodes.filter(
@@ -559,46 +670,77 @@ export default function ExpertiseConstellation({
             })}
           </g>
 
-          {mode === 'cluster' && (
+          {(mode === 'cluster' || mode === 'category') && (
             <g className="entry-cluster-labels">
               {clusterStats.map(cluster => {
                 const dim =
                   activeCluster !== null &&
                   activeCluster !== cluster.id
 
-                const width = cluster.labelWidth || 240
-                const height = cluster.transdirectional ? 84 : 62
+                const lines = wrapLabel(cluster.label, 29)
+                const lineHeight = 22
+                const totalHeight = (lines.length - 1) * lineHeight
 
                 return (
-                  <foreignObject
+                  <g
                     key={`label-${cluster.id}`}
-                    x={cluster.labelX - width / 2}
-                    y={cluster.labelY - height / 2}
-                    width={width}
-                    height={height}
-                    opacity={dim ? 0.22 : 1}
+                    className="entry-cluster-label"
+                    opacity={dim ? 0.12 : 1}
+                    role="button"
+                    tabIndex="0"
+                    aria-label={
+                      cluster.transdirectional
+                        ? `${cluster.label}, Cluster transdirectionnel`
+                        : cluster.label
+                    }
                     onPointerDown={event => event.stopPropagation()}
+                    onClick={() => focusCluster(cluster)}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        focusCluster(cluster)
+                      }
+                    }}
                   >
-                    <button
-                      type="button"
-                      className="entry-cluster-card"
-                      aria-label={
-                        cluster.transdirectional
-                          ? `${cluster.label}, Cluster transdirectionnel`
-                          : cluster.label
+                    <rect
+                      x={cluster.labelX - (cluster.labelWidth || 240) / 2}
+                      y={cluster.labelY - totalHeight / 2 - 18}
+                      width={cluster.labelWidth || 240}
+                      height={
+                        totalHeight +
+                        (cluster.transdirectional ? 58 : 38)
                       }
-                      onClick={() =>
-                        setActiveCluster(current =>
-                          current === cluster.id ? null : cluster.id
-                        )
-                      }
+                      fill="transparent"
+                    />
+
+                    <text
+                      x={cluster.labelX}
+                      y={cluster.labelY - totalHeight / 2}
+                      textAnchor="middle"
+                      className={`entry-cluster-title-svg ${mode === 'category' ? 'category-mode' : 'cluster-mode'}`}
                     >
-                      <strong>{cluster.label}</strong>
-                      {cluster.transdirectional && (
-                        <span>Cluster transdirectionnel</span>
-                      )}
-                    </button>
-                  </foreignObject>
+                      {lines.map((line, index) => (
+                        <tspan
+                          key={`${cluster.id}-${index}`}
+                          x={cluster.labelX}
+                          dy={index === 0 ? 0 : lineHeight}
+                        >
+                          {line}
+                        </tspan>
+                      ))}
+                    </text>
+
+                    {cluster.transdirectional && (
+                      <text
+                        x={cluster.labelX}
+                        y={cluster.labelY + totalHeight / 2 + 26}
+                        textAnchor="middle"
+                        className="entry-cluster-transdirectional-svg"
+                      >
+                        Cluster transdirectionnel
+                      </text>
+                    )}
+                  </g>
                 )
               })}
             </g>
@@ -606,19 +748,59 @@ export default function ExpertiseConstellation({
 
           {activeCluster !== null && (
             <g className="entry-node-labels-open-cluster" pointerEvents="none">
-              {positionedNodes
-                .filter(node => node.clusterId === activeCluster)
-                .map(node => (
-                  <text
-                    key={`open-label-${node.id}`}
-                    x={node.x + 16}
-                    y={node.y - 14}
-                    textAnchor="start"
-                    className="entry-open-node-label"
-                  >
-                    {node.label}
-                  </text>
-                ))}
+              {activeNodeLabels.map(item => {
+                const lines = wrapLabel(item.node.label, 28)
+                const boxWidth = 230
+                const boxHeight = Math.max(34, 14 + lines.length * 14)
+                const boxX =
+                  item.side === 'left'
+                    ? item.x - boxWidth
+                    : item.x
+                const boxY = item.y - boxHeight / 2
+
+                const textX =
+                  item.side === 'left'
+                    ? item.x - 9
+                    : item.x + 9
+
+                return (
+                  <g key={`open-label-${item.node.id}`}>
+                    <line
+                      x1={item.node.x}
+                      y1={item.node.y}
+                      x2={item.x}
+                      y2={item.y}
+                      className="entry-open-label-link"
+                    />
+
+                    <rect
+                      x={boxX}
+                      y={boxY}
+                      width={boxWidth}
+                      height={boxHeight}
+                      rx="8"
+                      className="entry-open-label-bg"
+                    />
+
+                    <text
+                      x={textX}
+                      y={item.y - ((lines.length - 1) * 14) / 2}
+                      textAnchor={item.side === 'left' ? 'end' : 'start'}
+                      className="entry-open-node-label"
+                    >
+                      {lines.map((line, index) => (
+                        <tspan
+                          key={`${item.node.id}-${index}`}
+                          x={textX}
+                          dy={index === 0 ? 0 : 14}
+                        >
+                          {line}
+                        </tspan>
+                      ))}
+                    </text>
+                  </g>
+                )
+              })}
             </g>
           )}
 
@@ -650,7 +832,7 @@ export default function ExpertiseConstellation({
       <style>{`
         .gephi-entry-shell{
           position:relative;
-          min-height:650px;
+          min-height:700px;
           overflow:hidden;
           border-radius:18px;
           background:
@@ -661,7 +843,7 @@ export default function ExpertiseConstellation({
         .gephi-entry-svg{
           display:block;
           width:100%;
-          height:clamp(650px,72vh,760px);
+          height:clamp(690px,76vh,820px);
           touch-action:none;
           user-select:none;
           cursor:grab;
@@ -783,6 +965,55 @@ export default function ExpertiseConstellation({
           pointer-events:none;
         }
 
+        .entry-cluster-label{
+          cursor:pointer;
+          outline:none;
+        }
+
+        .entry-cluster-title-svg{
+          fill:#142f55;
+          font-weight:880;
+          letter-spacing:-.15px;
+          paint-order:stroke;
+          stroke:#ffffff;
+          stroke-width:5px;
+          stroke-linejoin:round;
+          pointer-events:none;
+        }
+
+        .entry-cluster-title-svg.cluster-mode{
+          font-size:19px;
+        }
+
+        .entry-cluster-title-svg.category-mode{
+          font-size:22px;
+        }
+
+        .entry-cluster-transdirectional-svg{
+          fill:#61738c;
+          font-size:11px;
+          font-style:italic;
+          font-weight:750;
+          paint-order:stroke;
+          stroke:#ffffff;
+          stroke-width:4px;
+          pointer-events:none;
+        }
+
+        .entry-open-label-link{
+          stroke:#8295ad;
+          stroke-width:1.1;
+          opacity:.65;
+          vector-effect:non-scaling-stroke;
+        }
+
+        .entry-open-label-bg{
+          fill:rgba(255,255,255,.94);
+          stroke:rgba(203,213,225,.9);
+          stroke-width:1;
+          vector-effect:non-scaling-stroke;
+        }
+
         .entry-node-label text{
           fill:#0f2748;
           font-size:13px;
@@ -794,31 +1025,30 @@ export default function ExpertiseConstellation({
         }
 
         .entry-open-node-label{
-          fill:#0b1f3d;
-          font-size:12.5px;
-          font-weight:820;
-          paint-order:stroke;
-          stroke:#ffffff;
-          stroke-width:5.4px;
-          stroke-linejoin:round;
+          fill:#0b2447;
+          font-size:12px;
+          font-weight:840;
+          paint-order:normal;
+          stroke:none;
         }
 
         .entry-family-legend{
           position:absolute;
           z-index:6;
-          left:14px;
-          bottom:14px;
+          left:16px;
+          bottom:16px;
           display:flex;
           flex-wrap:wrap;
-          gap:8px 12px;
-          max-width:72%;
-          padding:8px 11px;
+          gap:9px 14px;
+          max-width:78%;
+          padding:10px 13px;
           border:1px solid #dbe4f0;
-          border-radius:9px;
-          background:rgba(255,255,255,.94);
-          color:#536686;
-          font-size:9px;
-          font-weight:700;
+          border-radius:10px;
+          background:rgba(255,255,255,.96);
+          color:#405675;
+          font-size:10.5px;
+          font-weight:740;
+          box-shadow:0 4px 14px rgba(15,46,85,.06);
         }
 
         .entry-family-legend span{
@@ -828,8 +1058,8 @@ export default function ExpertiseConstellation({
         }
 
         .entry-family-legend i{
-          width:9px;
-          height:9px;
+          width:11px;
+          height:11px;
           border-radius:50%;
         }
 
@@ -959,8 +1189,15 @@ export default function ExpertiseConstellation({
         }
 
         @media(max-width:1380px){
+          .entry-cluster-title-svg{
+            font-size:19px;
+          }
+          .entry-cluster-transdirectional-svg{
+            font-size:10px;
+          }
+
           .gephi-entry-svg{
-            height:650px;
+            height:700px;
           }
 
           .entry-cluster-card strong{
@@ -970,7 +1207,7 @@ export default function ExpertiseConstellation({
 
         @media(max-width:820px){
           .gephi-entry-svg{
-            height:540px;
+            height:570px;
           }
 
           .gephi-view-switch{
