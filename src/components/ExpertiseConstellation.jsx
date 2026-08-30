@@ -302,6 +302,50 @@ export default function ExpertiseConstellation({
     `translate(${-viewCenter.x} ${-viewCenter.y})`,
   ].join(' ')
 
+  useEffect(() => {
+    // Allègement du haut de page
+    const topBanner = document.querySelector('.expertise-transition-banner')
+    if (topBanner) {
+      topBanner.style.display = 'none'
+    }
+
+    // Réécriture légère de la carte latérale d’introduction
+    const allEls = Array.from(document.querySelectorAll('aside h1, aside h2, aside h3, aside p, aside a, .expertise-sidebar h1, .expertise-sidebar h2, .expertise-sidebar h3, .expertise-sidebar p, .expertise-sidebar a'))
+    const titleEl = allEls.find(el => (el.textContent || '').trim() === 'Pourquoi cette carte ?')
+    if (titleEl) {
+      titleEl.textContent = 'EXPERTISES MINISTÉRIELLES'
+      titleEl.style.fontSize = '12px'
+      titleEl.style.fontWeight = '800'
+      titleEl.style.letterSpacing = '0.08em'
+      titleEl.style.textTransform = 'uppercase'
+      titleEl.style.color = '#295187'
+
+      const siblings = Array.from(titleEl.parentElement ? titleEl.parentElement.children : [])
+      const firstParagraph = siblings.find(el => /^Les publications du ministère/i.test((el.textContent || '').trim()))
+      if (firstParagraph) {
+        firstParagraph.textContent = 'Des publications aux savoir-faire du ministère'
+        firstParagraph.style.fontSize = '24px'
+        firstParagraph.style.lineHeight = '1.08'
+        firstParagraph.style.fontWeight = '800'
+        firstParagraph.style.color = '#14345d'
+        firstParagraph.style.marginTop = '6px'
+        firstParagraph.style.marginBottom = '8px'
+      }
+
+      // Hide the other explanatory paragraphs/links to free space
+      siblings.forEach(el => {
+        if (el !== titleEl && el !== firstParagraph) {
+          const txt = (el.textContent || '').trim()
+          if (txt && !/rechercher|afficher|entité|type d’expertise/i.test(txt)) {
+            if (el.tagName.toLowerCase() === 'p' || el.tagName.toLowerCase() === 'a') {
+              el.style.display = 'none'
+            }
+          }
+        }
+      })
+    }
+  }, [])
+
   const hoveredNode = hoveredId ? byId.get(hoveredId) : null
   const labelNode = selected && byId.get(selected.id)
     ? byId.get(selected.id)
@@ -393,7 +437,7 @@ export default function ExpertiseConstellation({
                     cy={cy}
                     r={cluster.radius}
                     fill={cluster.color || DEFAULT_CLUSTER_COLOR}
-                    opacity={dim ? 0.03 : 0.19}
+                    opacity={dim ? 0.015 : 0.21}
                     filter="url(#cluster-blur-entry)"
                   />
                 )
@@ -442,7 +486,7 @@ export default function ExpertiseConstellation({
                   opacity={
                     selectedActive && clusterActive
                       ? (sameCluster ? 0.31 : 0.045) * linkDensity
-                      : 0.028
+                      : activeCluster !== null ? 0.012 : 0.028
                   }
                 />
               )
@@ -503,8 +547,10 @@ export default function ExpertiseConstellation({
                     strokeWidth={isSelected ? 4.2 : 1.65}
                     opacity={
                       selectedActive && clusterActive
-                        ? 0.97
-                        : 0.13
+                        ? 0.98
+                        : activeCluster !== null
+                          ? 0.08
+                          : 0.15
                     }
                     pointerEvents="none"
                   />
@@ -558,11 +604,29 @@ export default function ExpertiseConstellation({
             </g>
           )}
 
+          {activeCluster !== null && (
+            <g className="entry-node-labels-open-cluster" pointerEvents="none">
+              {positionedNodes
+                .filter(node => node.clusterId === activeCluster)
+                .map(node => (
+                  <text
+                    key={`open-label-${node.id}`}
+                    x={node.x + 16}
+                    y={node.y - 14}
+                    textAnchor="start"
+                    className="entry-open-node-label"
+                  >
+                    {node.label}
+                  </text>
+                ))}
+            </g>
+          )}
+
           {labelNode && (
             <g className="entry-node-label" pointerEvents="none">
               <text
-                x={labelNode.x + 16}
-                y={labelNode.y - 15}
+                x={labelNode.x + 18}
+                y={labelNode.y - 16}
                 textAnchor="start"
               >
                 {labelNode.label}
@@ -698,7 +762,7 @@ export default function ExpertiseConstellation({
 
         .entry-cluster-name{
           fill:#203653;
-          font-size:19px;
+          font-size:22px;
           font-weight:860;
           letter-spacing:-.2px;
           paint-order:stroke;
@@ -720,12 +784,22 @@ export default function ExpertiseConstellation({
         }
 
         .entry-node-label text{
-          fill:#142d52;
-          font-size:12px;
-          font-weight:800;
+          fill:#0f2748;
+          font-size:13px;
+          font-weight:850;
           paint-order:stroke;
-          stroke:#fff;
-          stroke-width:4px;
+          stroke:#ffffff;
+          stroke-width:5px;
+          stroke-linejoin:round;
+        }
+
+        .entry-open-node-label{
+          fill:#0b1f3d;
+          font-size:12.5px;
+          font-weight:820;
+          paint-order:stroke;
+          stroke:#ffffff;
+          stroke-width:5.4px;
           stroke-linejoin:round;
         }
 
@@ -780,22 +854,49 @@ export default function ExpertiseConstellation({
         }
 
         .entry-cluster-card strong{
-          font-size:22px;
-          line-height:1.08;
+          font-size:28px;
+          line-height:1.06;
           font-weight:860;
           letter-spacing:-.15px;
         }
 
         .entry-cluster-card span{
           color:#6b7b91;
-          font-size:13px;
+          font-size:15px;
           line-height:1.12;
           font-style:italic;
           font-weight:680;
         }
 
 
-        /* ONGLET 1 — entrée immersive : priorité visuelle au graphe */
+        /* ONGLET 1 — finalisation lisibilité */
+        .expertise-screen .expertise-transition-banner{
+          display:none!important;
+        }
+
+        .expertise-screen>.graph-workspace{
+          padding-top:10px!important;
+        }
+
+        .expertise-screen aside,
+        .expertise-screen .sidebar,
+        .expertise-screen .left-sidebar,
+        .expertise-screen .workspace-sidebar{
+          padding-top:12px!important;
+        }
+
+        .expertise-screen aside h1,
+        .expertise-screen aside h2,
+        .expertise-screen aside h3{
+          word-break:normal!important;
+        }
+
+        .expertise-screen aside{
+          overflow-wrap:anywhere;
+        }
+
+
+                /* ONGLET 1 — entrée immersive : priorité visuelle au graphe */
         .expertise-screen>.graph-workspace{
           padding:14px 18px 10px!important;
         }
@@ -863,7 +964,7 @@ export default function ExpertiseConstellation({
           }
 
           .entry-cluster-card strong{
-            font-size:19px;
+            font-size:22px;
           }
         }
 
@@ -882,7 +983,7 @@ export default function ExpertiseConstellation({
           }
 
           .entry-cluster-card strong{
-            font-size:16px;
+            font-size:18px;
           }
 
           .entry-cluster-card span{
