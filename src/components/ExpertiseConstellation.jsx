@@ -423,10 +423,10 @@ export default function ExpertiseConstellation({
     }
 
     // Réécriture légère de la carte latérale d’introduction
-    const allEls = Array.from(document.querySelectorAll('aside h1, aside h2, aside h3, aside p, aside a, .expertise-sidebar h1, .expertise-sidebar h2, .expertise-sidebar h3, .expertise-sidebar p, .expertise-sidebar a'))
+    const allEls = Array.from(document.querySelectorAll('aside h1, aside h2, aside h3, aside p, aside a, aside label, aside div, aside span, .expertise-sidebar h1, .expertise-sidebar h2, .expertise-sidebar h3, .expertise-sidebar p, .expertise-sidebar a, .expertise-sidebar label, .expertise-sidebar div, .expertise-sidebar span'))
     const titleEl = allEls.find(el => (el.textContent || '').trim() === 'Pourquoi cette carte ?')
     if (titleEl) {
-      // On retire uniquement le petit sur-titre.
+      // On supprime uniquement le petit sur-titre.
       titleEl.style.display = 'none'
 
       const siblings = Array.from(titleEl.parentElement ? titleEl.parentElement.children : [])
@@ -434,27 +434,47 @@ export default function ExpertiseConstellation({
       if (firstParagraph) {
         firstParagraph.textContent = 'Des publications aux savoir-faire du ministère'
         firstParagraph.style.fontSize = '21px'
-        firstParagraph.style.lineHeight = '1.12'
+        firstParagraph.style.lineHeight = '1.10'
         firstParagraph.style.fontWeight = '800'
         firstParagraph.style.color = '#14345d'
         firstParagraph.style.marginTop = '0'
         firstParagraph.style.marginBottom = '10px'
       }
 
-      // On conserve le lien d'introduction et les contrôles de la page.
+      // On garde le lien d'introduction, on masque seulement les autres paragraphes explicatifs.
       siblings.forEach(el => {
         if (el !== titleEl && el !== firstParagraph) {
           const txt = (el.textContent || '').trim()
           if (
-            el.tagName.toLowerCase() === 'p' &&
             txt &&
-            !/lire l’introduction complète|lire l'introduction complète/i.test(txt)
+            !/lire l’introduction complète|lire l'introduction complète|rechercher|afficher|entité|type d’expertise/i.test(txt)
           ) {
-            el.style.display = 'none'
+            if (el.tagName.toLowerCase() === 'p') {
+              el.style.display = 'none'
+            }
           }
         }
       })
     }
+
+    // Masquer la rubrique "Afficher" et ses deux options pour faire remonter le filtre Entité(s).
+    const hideTextBlock = text => {
+      const el = allEls.find(node => (node.textContent || '').trim() === text)
+      if (!el) return
+      el.style.display = 'none'
+      const parent = el.parentElement
+      if (parent && parent !== document.body) {
+        const txt = (parent.textContent || '').trim()
+        if (txt && txt.length < 180) {
+          parent.style.display = 'none'
+        }
+      }
+    }
+
+    hideTextBlock('Afficher')
+    hideTextBlock('Toutes les expertises')
+    hideTextBlock('Mes expertises uniquement')
+
   }, [])
 
   const hoveredNode = hoveredId ? byId.get(hoveredId) : null
@@ -677,7 +697,7 @@ export default function ExpertiseConstellation({
                   activeCluster !== null &&
                   activeCluster !== cluster.id
 
-                const lines = wrapLabel(cluster.label, 29)
+                const lines = wrapLabel(cluster.label, mode === 'category' ? 22 : 24)
                 const lineHeight = 22
                 const totalHeight = (lines.length - 1) * lineHeight
 
@@ -717,7 +737,7 @@ export default function ExpertiseConstellation({
                       x={cluster.labelX}
                       y={cluster.labelY - totalHeight / 2}
                       textAnchor="middle"
-                      className={`entry-cluster-title-svg ${mode === 'category' ? 'category-mode' : 'cluster-mode'}`}
+                      className="entry-cluster-title-svg"
                     >
                       {lines.map((line, index) => (
                         <tspan
@@ -972,6 +992,7 @@ export default function ExpertiseConstellation({
 
         .entry-cluster-title-svg{
           fill:#142f55;
+          font-size:25px;
           font-weight:880;
           letter-spacing:-.15px;
           paint-order:stroke;
@@ -981,17 +1002,9 @@ export default function ExpertiseConstellation({
           pointer-events:none;
         }
 
-        .entry-cluster-title-svg.cluster-mode{
-          font-size:19px;
-        }
-
-        .entry-cluster-title-svg.category-mode{
-          font-size:22px;
-        }
-
         .entry-cluster-transdirectional-svg{
           fill:#61738c;
-          font-size:11px;
+          font-size:12px;
           font-style:italic;
           font-weight:750;
           paint-order:stroke;
@@ -1035,26 +1048,29 @@ export default function ExpertiseConstellation({
         .entry-family-legend{
           position:absolute;
           z-index:6;
-          left:16px;
-          bottom:16px;
+          top:72px;
+          right:68px;
+          left:auto;
+          bottom:auto;
           display:flex;
           flex-wrap:wrap;
-          gap:9px 14px;
-          max-width:78%;
+          justify-content:flex-end;
+          gap:10px 15px;
+          max-width:min(62%, 760px);
           padding:10px 13px;
           border:1px solid #dbe4f0;
-          border-radius:10px;
+          border-radius:11px;
           background:rgba(255,255,255,.96);
-          color:#405675;
-          font-size:10.5px;
+          color:#46607f;
+          font-size:11px;
           font-weight:740;
-          box-shadow:0 4px 14px rgba(15,46,85,.06);
+          box-shadow:0 4px 14px rgba(15,46,85,.07);
         }
 
         .entry-family-legend span{
           display:flex;
           align-items:center;
-          gap:5px;
+          gap:6px;
         }
 
         .entry-family-legend i{
@@ -1125,6 +1141,12 @@ export default function ExpertiseConstellation({
           overflow-wrap:anywhere;
         }
 
+        .expertise-screen aside .sidebar-section,
+        .expertise-screen .workspace-sidebar .sidebar-section{
+          margin-bottom:10px!important;
+        }
+
+
 
                 /* ONGLET 1 — entrée immersive : priorité visuelle au graphe */
         .expertise-screen>.graph-workspace{
@@ -1190,10 +1212,10 @@ export default function ExpertiseConstellation({
 
         @media(max-width:1380px){
           .entry-cluster-title-svg{
-            font-size:19px;
+            font-size:22px;
           }
           .entry-cluster-transdirectional-svg{
-            font-size:10px;
+            font-size:11px;
           }
 
           .gephi-entry-svg{
@@ -1208,6 +1230,15 @@ export default function ExpertiseConstellation({
         @media(max-width:820px){
           .gephi-entry-svg{
             height:570px;
+          }
+
+          .entry-family-legend{
+            top:auto;
+            right:14px;
+            left:14px;
+            bottom:14px;
+            max-width:none;
+            justify-content:flex-start;
           }
 
           .gephi-view-switch{
