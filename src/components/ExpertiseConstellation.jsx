@@ -416,11 +416,10 @@ export default function ExpertiseConstellation({
   ].join(' ')
 
   useEffect(() => {
-    // Allègement du haut de page
+    // On réutilise l’illustration déjà présente dans le bandeau d’introduction,
+    // puis on masque ce bandeau supérieur.
     const topBanner = document.querySelector('.expertise-transition-banner')
-    if (topBanner) {
-      topBanner.style.display = 'none'
-    }
+    const topBannerImage = topBanner?.querySelector('img') || null
 
     // Réécriture légère de la carte latérale d’introduction
     const allEls = Array.from(document.querySelectorAll('aside h1, aside h2, aside h3, aside p, aside a, aside label, aside div, aside span, .expertise-sidebar h1, .expertise-sidebar h2, .expertise-sidebar h3, .expertise-sidebar p, .expertise-sidebar a, .expertise-sidebar label, .expertise-sidebar div, .expertise-sidebar span'))
@@ -429,16 +428,32 @@ export default function ExpertiseConstellation({
       // On supprime uniquement le petit sur-titre.
       titleEl.style.display = 'none'
 
-      const siblings = Array.from(titleEl.parentElement ? titleEl.parentElement.children : [])
+      const introContainer = titleEl.parentElement
+      const siblings = Array.from(introContainer ? introContainer.children : [])
       const firstParagraph = siblings.find(el => /^Les publications du ministère/i.test((el.textContent || '').trim()))
+
+      if (introContainer && topBannerImage && !introContainer.querySelector('.sidebar-intro-visual')) {
+        const visual = topBannerImage.cloneNode(true)
+        visual.className = 'sidebar-intro-visual'
+        visual.removeAttribute('width')
+        visual.removeAttribute('height')
+
+        if (firstParagraph) {
+          introContainer.insertBefore(visual, firstParagraph)
+        } else {
+          introContainer.prepend(visual)
+        }
+      }
+
       if (firstParagraph) {
         firstParagraph.textContent = 'Des publications aux savoir-faire du ministère'
-        firstParagraph.style.fontSize = '21px'
-        firstParagraph.style.lineHeight = '1.10'
+        firstParagraph.classList.add('sidebar-intro-title')
+        firstParagraph.style.fontSize = '22px'
+        firstParagraph.style.lineHeight = '1.12'
         firstParagraph.style.fontWeight = '800'
         firstParagraph.style.color = '#14345d'
         firstParagraph.style.marginTop = '0'
-        firstParagraph.style.marginBottom = '10px'
+        firstParagraph.style.marginBottom = '12px'
       }
 
       // On garde le lien d'introduction, on masque seulement les autres paragraphes explicatifs.
@@ -455,6 +470,10 @@ export default function ExpertiseConstellation({
           }
         }
       })
+    }
+
+    if (topBanner) {
+      topBanner.style.display = 'none'
     }
 
     // Masquer la rubrique "Afficher" et ses deux options pour faire remonter le filtre Entité(s).
@@ -976,7 +995,7 @@ export default function ExpertiseConstellation({
 
         .entry-cluster-transdirectional{
           fill:#6b7b91;
-          font-size:12px;
+          font-size:13px;
           font-style:italic;
           font-weight:680;
           paint-order:stroke;
@@ -992,7 +1011,7 @@ export default function ExpertiseConstellation({
 
         .entry-cluster-title-svg{
           fill:#142f55;
-          font-size:25px;
+          font-size:28px;
           font-weight:880;
           letter-spacing:-.15px;
           paint-order:stroke;
@@ -1115,6 +1134,24 @@ export default function ExpertiseConstellation({
         }
 
 
+        /* Bloc d'introduction latéral — proportions validées */
+        .sidebar-intro-visual{
+          display:block!important;
+          width:118px!important;
+          max-width:62%!important;
+          height:auto!important;
+          object-fit:contain!important;
+          margin:2px auto 16px!important;
+        }
+
+        .sidebar-intro-title{
+          display:block!important;
+          max-width:210px!important;
+          margin-left:auto!important;
+          margin-right:auto!important;
+          text-align:left!important;
+        }
+
         /* ONGLET 1 — finalisation lisibilité */
         .expertise-screen .expertise-transition-banner{
           display:none!important;
@@ -1212,7 +1249,7 @@ export default function ExpertiseConstellation({
 
         @media(max-width:1380px){
           .entry-cluster-title-svg{
-            font-size:22px;
+            font-size:24px;
           }
           .entry-cluster-transdirectional-svg{
             font-size:11px;
